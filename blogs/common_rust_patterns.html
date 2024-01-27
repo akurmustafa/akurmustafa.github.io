@@ -1,5 +1,5 @@
 <!DOCTYPE html><html><head>
-      <title>Common RUST Patterns I wish Everyone knew</title>
+      <title>common_rust_patterns</title>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       
@@ -32,8 +32,9 @@
 <li><a href="#2-vecresultt-to-resultvect-conversion"><code>Vec&lt;Result&lt;T&gt;&gt;</code> to <code>Result&lt;Vec&lt;T&gt;&gt;</code> conversion</a></li>
 <li><a href="#3-using-izip-to-iterate-multiple-collections-simultaneously">Using <code>izip!</code> for iterating multiple collections simultaneously.</a></li>
 <li><a href="#4-getting-owned-value-from-a-vector-without-cloning">Getting owned value from a vector without cloning.</a></li>
+<li><a href="#5-referring-values-inside-a-struct">Referring Values inside a struct</a></li>
 </ul>
-<h2 id="1-using--operator-for-early-exit">Using <code>?</code> Operator for early exit </h2>
+<h2 id="1-using--operator-for-early-exit">1. Using <code>?</code> Operator for early exit </h2>
 <p>Assume you have following function with signature</p>
 <pre data-role="codeBlock" data-info="rust" class="language-rust rust"><code><span class="token keyword keyword-fn">fn</span> <span class="token function-definition function">process</span><span class="token operator">&lt;</span><span class="token class-name">T</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>value<span class="token punctuation">:</span> <span class="token class-name">T</span><span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token class-name">Result</span><span class="token operator">&lt;</span><span class="token class-name">T</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span><span class="token punctuation">...</span><span class="token punctuation">}</span>
 </code></pre><p>And you use function above in another function as below</p>
@@ -56,7 +57,7 @@
 <span class="token punctuation">}</span>
 </code></pre><p>using <code>?</code> operator.</p>
 <p>Similar pattern can be used to early exit from <code>Option</code> <code>None</code>.</p>
-<h2 id="2-vecresultt-to-resultvect-conversion"><code>Vec&lt;Result&lt;T&gt;&gt;</code> to <code>Result&lt;Vec&lt;T&gt;&gt;</code> Conversion </h2>
+<h2 id="2-vecresultt-to-resultvect-conversion">2. <code>Vec&lt;Result&lt;T&gt;&gt;</code> to <code>Result&lt;Vec&lt;T&gt;&gt;</code> Conversion </h2>
 <p>Assume you have the following RUST function</p>
 <pre data-role="codeBlock" data-info="rust" class="language-rust rust"><code><span class="token keyword keyword-fn">fn</span> <span class="token function-definition function">process</span><span class="token operator">&lt;</span><span class="token class-name">T</span><span class="token operator">&gt;</span><span class="token punctuation">(</span>val<span class="token punctuation">:</span> <span class="token class-name">T</span><span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token class-name">Result</span><span class="token operator">&lt;</span><span class="token class-name">T</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
   <span class="token punctuation">...</span>
@@ -82,7 +83,7 @@
 <span class="token punctuation">}</span>
 </code></pre><p>where, <code>processed_entries_without_error</code> has type <code>Vec&lt;T&gt;</code>, and main function returns error, if there is an error during processing of the any entry inside <code>entries</code>.</p>
 <p>Similar Conversion applies <code>Vec&lt;Option&lt;T&gt;&gt;</code> to <code>Option&lt;Vec&lt;T&gt;&gt;</code> conversion.</p>
-<h2 id="3-using-izip-to-iterate-multiple-collections-simultaneously">Using <code>izip!</code> to iterate multiple collections simultaneously </h2>
+<h2 id="3-using-izip-to-iterate-multiple-collections-simultaneously">3. Using <code>izip!</code> to iterate multiple collections simultaneously </h2>
 <p>Assume you want to iterate <code>vec1: Vec&lt;T&gt;</code> and <code>vec2: Vec&lt;T&gt;</code> simultaneously. To do so, you can use <code>.zip</code> iterator below:</p>
 <pre data-role="codeBlock" data-info="rust" class="language-rust rust"><code><span class="token keyword keyword-let">let</span> vec1 <span class="token operator">=</span> <span class="token macro property">vec!</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">,</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
 <span class="token keyword keyword-let">let</span> vec2 <span class="token operator">=</span> <span class="token macro property">vec!</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">,</span><span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
@@ -119,7 +120,7 @@
 <span class="token punctuation">}</span>
 </code></pre><p>This version is much more readable, and concise.</p>
 <p>However, please note that <code>izip!</code> macro reside in <code>itertools</code> crate, which is not in standard library (It is very common though).</p>
-<h2 id="4-getting-owned-value-from-a-vector-without-cloning">Getting Owned Value from a Vector without Cloning </h2>
+<h2 id="4-getting-owned-value-from-a-vector-without-cloning">4. Getting owned value from a vector without cloning </h2>
 <p>Assume you have an owned vector that you want to use, and you only need 0th and 1st indices of this vector.</p>
 <p>What you would normally do is following:</p>
 <pre data-role="codeBlock" data-info="rust" class="language-rust rust"><code><span class="token keyword keyword-let">let</span> entries<span class="token punctuation">:</span> <span class="token class-name">Vec</span><span class="token operator">&lt;</span><span class="token class-name">String</span><span class="token operator">&gt;</span> <span class="token operator">=</span> <span class="token macro property">vec!</span><span class="token punctuation">[</span><span class="token class-name">String</span><span class="token punctuation">::</span><span class="token function">new</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token number">4</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
@@ -141,6 +142,61 @@ entries<span class="token punctuation">.</span><span class="token function">swap
 <span class="token keyword keyword-let">let</span> first_entry <span class="token operator">=</span> entries<span class="token punctuation">.</span><span class="token function">pop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">unwrap</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 </code></pre><p>As an example, consider following vector: <code>entries = [a,b,c,d,e]</code>, after <code>.swap_remove(1)</code>, <code>entries</code> vector becomes <code>[a,e,c,d]</code>, and method call returns <code>b</code>.</p>
 <p>For this reason, <code>entries</code> vector now need to be mutable. Secondly, we need to remove entries in descending order to make sure that <code>.swap_remove</code> indeed returns correct entry in the original vector.</p>
+<h2 id="5-referring-values-inside-a-struct">5. Referring Values inside a struct </h2>
+<p>Assume you have following <code>struct</code></p>
+<pre data-role="codeBlock" data-info="rust" class="language-rust rust"><code>  <span class="token keyword keyword-pub">pub</span> <span class="token keyword keyword-struct">struct</span> <span class="token type-definition class-name">Tuple3</span> <span class="token punctuation">{</span>
+    first<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">,</span>
+    third<span class="token punctuation">:</span> <span class="token class-name">String</span><span class="token punctuation">,</span>
+  <span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre><p>and you have an istance of <code>struct</code> above as below:</p>
+<pre data-role="codeBlock" data-info="rust" class="language-rust rust"><code><span class="token keyword keyword-let">let</span> tuple3 <span class="token operator">=</span> <span class="token class-name">Tuple3</span> <span class="token punctuation">{</span>
+  first<span class="token punctuation">:</span> <span class="token string">"first"</span><span class="token punctuation">.</span><span class="token function">to_string</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+  second<span class="token punctuation">:</span> <span class="token string">"second"</span><span class="token punctuation">.</span><span class="token function">to_string</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+  third<span class="token punctuation">:</span> <span class="token string">"third"</span><span class="token punctuation">.</span><span class="token function">to_string</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre><p>when you want to refer to fields of this struct, you have to use following syntax <code>tuple3.first, tuple3.second, etc.</code><br>
+However, this is a bit verbose, we want to refer to fields with less typing. One alternative solution might be reassigning fields to new variable for easy reference. Such as below:</p>
+<pre data-role="codeBlock" data-info="rust" class="language-rust rust"><code><span class="token keyword keyword-let">let</span> first<span class="token punctuation">:</span> <span class="token class-name">String</span> <span class="token operator">=</span> tuple3<span class="token punctuation">.</span>first<span class="token punctuation">;</span>
+<span class="token keyword keyword-let">let</span> second<span class="token punctuation">:</span> <span class="token class-name">String</span> <span class="token operator">=</span> tuple3<span class="token punctuation">.</span>second<span class="token punctuation">;</span>
+<span class="token keyword keyword-let">let</span> third<span class="token punctuation">:</span> <span class="token class-name">String</span> <span class="token operator">=</span> tuple3<span class="token punctuation">.</span>third<span class="token punctuation">;</span>
+<span class="token comment">// We can use variables `first`, `second`, `third` from now on</span>
+</code></pre><p>However, this is a bit repetitive. With <code>RUST</code> pattern matching, we can expand fields inside <code>struct</code>s to new variable. The syntax is as below:</p>
+<pre data-role="codeBlock" data-info="rust" class="language-rust rust"><code><span class="token keyword keyword-let">let</span> <span class="token class-name">Tuple3</span> <span class="token punctuation">{</span>
+    first<span class="token punctuation">,</span>
+    second<span class="token punctuation">,</span>
+    third<span class="token punctuation">,</span>
+<span class="token punctuation">}</span> <span class="token operator">=</span> tuple3<span class="token punctuation">;</span>
+<span class="token comment">// We can use variables `first`, `second`, `third` from now on</span>
+</code></pre><p>We might need to refer only 2 members, doesnt't care about others. In this case, we don't want to list all members as above (imagine you have 10 members). We can use following syntax to get only subset of fields</p>
+<pre data-role="codeBlock" data-info="rust" class="language-rust rust"><code><span class="token keyword keyword-let">let</span> <span class="token class-name">Tuple3</span> <span class="token punctuation">{</span>
+    first<span class="token punctuation">,</span>
+    third<span class="token punctuation">,</span>
+    <span class="token punctuation">..</span>
+<span class="token punctuation">}</span> <span class="token operator">=</span> tuple3<span class="token punctuation">;</span>
+<span class="token comment">// We can use variables `first`, `third` from now on</span>
+</code></pre><p>where fields other than, <code>first</code> and <code>third</code> are ignored. By the way, we don't need to keep original field order during struct pattern matching as long as field names match. So following code snippet is functionally equivalent to above</p>
+<pre data-role="codeBlock" data-info="rust" class="language-rust rust"><code><span class="token keyword keyword-let">let</span> <span class="token class-name">Tuple3</span> <span class="token punctuation">{</span>
+    third<span class="token punctuation">,</span>
+    first<span class="token punctuation">,</span>
+    <span class="token punctuation">..</span>
+<span class="token punctuation">}</span> <span class="token operator">=</span> tuple3<span class="token punctuation">;</span>
+<span class="token comment">// We can use variables `first`, `third` from now on</span>
+</code></pre><p>where field <code>third</code> is written before <code>first</code>.<br>
+One downside of this pattern is that, we need to use original field name. However, in our application we might need to change name of the variable to make intent clear and code more readable.</p>
+<p>Imagine, we use field <code>first</code> for <code>width</code>, field <code>second</code> for <code>height</code> and field <code>third</code> for <code>depth</code>.</p>
+<p>Without pattern matching, we can just use following code snippet for renaming original field names.</p>
+<pre data-role="codeBlock" data-info="rust" class="language-rust rust"><code><span class="token keyword keyword-let">let</span> width<span class="token punctuation">:</span> <span class="token class-name">String</span> <span class="token operator">=</span> tuple3<span class="token punctuation">.</span>first<span class="token punctuation">;</span>
+<span class="token keyword keyword-let">let</span> height<span class="token punctuation">:</span> <span class="token class-name">String</span> <span class="token operator">=</span> tuple3<span class="token punctuation">.</span>second<span class="token punctuation">;</span>
+<span class="token keyword keyword-let">let</span> depth<span class="token punctuation">:</span> <span class="token class-name">String</span> <span class="token operator">=</span> tuple3<span class="token punctuation">.</span>third<span class="token punctuation">;</span>
+<span class="token comment">// We can use variables `width`, `height`, `depth` from now on</span>
+</code></pre><p>Similary, we can accomplish same thing with stuct patten matching as below:</p>
+<pre data-role="codeBlock" data-info="rust" class="language-rust rust"><code><span class="token keyword keyword-let">let</span> <span class="token class-name">Tuple3</span> <span class="token punctuation">{</span>
+    first<span class="token punctuation">:</span> width<span class="token punctuation">,</span>
+    second<span class="token punctuation">:</span> height<span class="token punctuation">,</span>
+    third<span class="token punctuation">:</span> depth<span class="token punctuation">,</span>
+<span class="token punctuation">}</span> <span class="token operator">=</span> tuple3<span class="token punctuation">;</span>
+<span class="token comment">// We can use variables `width`, `height`, `depth` from now on</span>
+</code></pre><p>where desired names are written after <code>&lt;field_name&gt;:</code>.</p>
 
       </div>
       
