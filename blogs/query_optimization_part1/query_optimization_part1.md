@@ -281,9 +281,8 @@ to its optimized version
 where unnecessary data is not carried between operators.
 
 ## References
-[Apache Datafusion Documentation](https://arrow.apache.org/datafusion/)
-[Apache Datafusion Project Github Page](https://github.com/apache/arrow-datafusion)
-
+1- [Apache Datafusion Documentation](https://arrow.apache.org/datafusion/)
+2 -[Apache Datafusion Project Github Page](https://github.com/apache/arrow-datafusion)
 
 
 
