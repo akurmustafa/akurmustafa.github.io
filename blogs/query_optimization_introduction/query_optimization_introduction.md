@@ -1,5 +1,5 @@
 ![clock_header.jpg](images/clock_header.jpg)
-# Query Optimization - Part 1
+# Query Optimization - Introduction
 
 In this series of blog posts. I will talk about query optimization in general. However, before doing so; In this blog post we will cover
 

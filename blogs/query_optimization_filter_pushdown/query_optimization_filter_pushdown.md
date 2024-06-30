@@ -2,7 +2,7 @@
 # Query Optimization - Filter Pushdown
 
 ## Introduction
-In this blog post, we will talk about Filter Pushdown optimization to generate better plans. However, before reading this blog post I recommend reading [part 1](https://akurmustafa.github.io/blogs/query_optimization_part1/query_optimization_part1.html) where 
+In this blog post, we will talk about Filter Pushdown optimization to generate better plans. However, before reading this blog post I recommend reading [part 1](https://akurmustafa.github.io/blogs/query_optimization_introduction/query_optimization_introduction.html) where 
 - we discussed the query optimization in general.
 - we established pre-requiste concepts for subsequent stages.
 
