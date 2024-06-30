@@ -12,7 +12,7 @@ These topics will lay the foundation for query optimization, will establish a co
 
 In subsequent parts: I plan to cover following optimizations:
 
-- Filter Push-down
+- [Filter Pushdown](https://akurmustafa.github.io/blogs/query_optimization_filter_pushdown/query_optimization_filter_pushdown.html)
 - Projection Optimization
 - Sort Optimization and Ordering Propagation
 - Parallelization of the plan execution
