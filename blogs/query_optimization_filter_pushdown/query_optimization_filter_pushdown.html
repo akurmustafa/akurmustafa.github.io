@@ -1,0 +1,306 @@
+<!DOCTYPE html><html><head>
+      <title>query_optimization_filter_pushdown</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="file:////Users/akurmustafa/.vscode/extensions/shd101wyy.markdown-preview-enhanced-0.8.13/crossnote/dependencies/katex/katex.min.css">
+      
+      
+      
+      
+      
+      <style>
+      code[class*=language-],pre[class*=language-]{color:#333;background:0 0;font-family:Consolas,"Liberation Mono",Menlo,Courier,monospace;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.4;-moz-tab-size:8;-o-tab-size:8;tab-size:8;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:.8em;overflow:auto;border-radius:3px;background:#f5f5f5}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal;background:#f5f5f5}.token.blockquote,.token.comment{color:#969896}.token.cdata{color:#183691}.token.doctype,.token.macro.property,.token.punctuation,.token.variable{color:#333}.token.builtin,.token.important,.token.keyword,.token.operator,.token.rule{color:#a71d5d}.token.attr-value,.token.regex,.token.string,.token.url{color:#183691}.token.atrule,.token.boolean,.token.code,.token.command,.token.constant,.token.entity,.token.number,.token.property,.token.symbol{color:#0086b3}.token.prolog,.token.selector,.token.tag{color:#63a35c}.token.attr-name,.token.class,.token.class-name,.token.function,.token.id,.token.namespace,.token.pseudo-class,.token.pseudo-element,.token.url-reference .token.variable{color:#795da3}.token.entity{cursor:help}.token.title,.token.title .token.punctuation{font-weight:700;color:#1d3e81}.token.list{color:#ed6a43}.token.inserted{background-color:#eaffea;color:#55a532}.token.deleted{background-color:#ffecec;color:#bd2c00}.token.bold{font-weight:700}.token.italic{font-style:italic}.language-json .token.property{color:#183691}.language-markup .token.tag .token.punctuation{color:#333}.language-css .token.function,code.language-css{color:#0086b3}.language-yaml .token.atrule{color:#63a35c}code.language-yaml{color:#183691}.language-ruby .token.function{color:#333}.language-markdown .token.url{color:#795da3}.language-makefile .token.symbol{color:#795da3}.language-makefile .token.variable{color:#183691}.language-makefile .token.builtin{color:#0086b3}.language-bash .token.keyword{color:#0086b3}pre[data-line]{position:relative;padding:1em 0 1em 3em}pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;display:block;width:100%}pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0));pointer-events:none;line-height:inherit;white-space:pre}pre[data-line] .line-highlight:before,pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none;box-shadow:0 1px #fff}pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}html body{font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ol,html body>ul{margin-bottom:16px}html body ol,html body ul{padding-left:2em}html body ol.no-list,html body ul.no-list{padding:0;list-style-type:none}html body ol ol,html body ol ul,html body ul ol,html body ul ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:700;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::after,html body code::before{letter-spacing:-.2em;content:'\00a0'}html body pre>code{padding:0;margin:0;word-break:normal;white-space:pre;background:0 0;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:after,html body pre code:before,html body pre tt:after,html body pre tt:before{content:normal}html body blockquote,html body dl,html body ol,html body p,html body pre,html body ul{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body code,html body pre{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview ul{list-style:disc}.markdown-preview ul ul{list-style:circle}.markdown-preview ul ul ul{list-style:square}.markdown-preview ol{list-style:decimal}.markdown-preview ol ol,.markdown-preview ul ol{list-style-type:lower-roman}.markdown-preview ol ol ol,.markdown-preview ol ul ol,.markdown-preview ul ol ol,.markdown-preview ul ul ol{list-style-type:lower-alpha}.markdown-preview .newpage,.markdown-preview .pagebreak{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center!important}.markdown-preview:not([data-for=preview]) .code-chunk .code-chunk-btn-group{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .status{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .output-div{margin-bottom:16px}.markdown-preview .md-toc{padding:0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link div,.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}.markdown-preview .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0;min-height:100vh}@media screen and (min-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{font-size:14px!important;padding:1em}}@media print{html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc{padding:0 16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link div,html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% - 300px);padding:2em calc(50% - 457px - 300px / 2);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+      <!-- The content below will be included at the end of the <head> element. --><script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // your code here
+  });
+</script></head><body for="html-export">
+    
+    
+      <div class="crossnote markdown-preview  ">
+      
+<p><img src="images/clock_header.jpg" alt="clock_header.jpg"></p>
+<h1 id="query-optimization---filter-pushdown">Query Optimization - Filter Pushdown </h1>
+<h2 id="introduction">Introduction </h2>
+<p>In this blog post, we will talk about Filter Pushdown optimization to generate better plans. However, before reading this blog post I recommend reading <a href="https://akurmustafa.github.io/blogs/query_optimization_part1/query_optimization_part1.html">part 1</a> where</p>
+<ul>
+<li>we discussed the query optimization in general.</li>
+<li>we established pre-requiste concepts for subsequent stages.</li>
+</ul>
+<p>In this blog post, I assume reader is familiar with <code>SQL</code> queries, <code>LogicalPlan</code>, <code>PhysicalPlan</code>. Also, I use <a href="https://datafusion.apache.org/">Apache Datafusion</a> to execute queries and to generate plans. However, similar concepts apply to other sytems.</p>
+<p>In query optimization, our aim is to generate the plan</p>
+<ul>
+<li>which execute fastest</li>
+<li>which minimizes the data transfer between operators</li>
+</ul>
+<p>Please note that, these properties are mostly correlated but doesn't imply the other. Hence, the best plan in one sense might be different from the best plan in another sense. Hence, there is no globally "the most optimum" plan for most of the cases.</p>
+<h2 id="motivating-example">Motivating Example </h2>
+<p>Filter Pushdown is helpful in minimizing the data transfer between operators. Let's see the difference Filter Pushdown can make with an example.</p>
+<p>Assume we have following table</p>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token keyword keyword-CREATE">CREATE</span> <span class="token keyword keyword-TABLE">TABLE</span> <span class="token keyword keyword-IF">IF</span> <span class="token operator">NOT</span> <span class="token keyword keyword-EXISTS">EXISTS</span> student_table<span class="token punctuation">(</span>
+    id <span class="token keyword keyword-INT">INT</span><span class="token punctuation">,</span> 
+    name <span class="token keyword keyword-VARCHAR">VARCHAR</span><span class="token punctuation">,</span> 
+    surname <span class="token keyword keyword-VARCHAR">VARCHAR</span><span class="token punctuation">,</span> 
+    major <span class="token keyword keyword-VARCHAR">VARCHAR</span><span class="token punctuation">,</span> 
+    country <span class="token keyword keyword-VARCHAR">VARCHAR</span>
+<span class="token punctuation">)</span> <span class="token keyword keyword-AS">AS</span> <span class="token keyword keyword-VALUES">VALUES</span>
+    <span class="token punctuation">(</span><span class="token number">100</span><span class="token punctuation">,</span> <span class="token string">'Camille'</span><span class="token punctuation">,</span> <span class="token string">'Facio'</span><span class="token punctuation">,</span> <span class="token string">'CS'</span><span class="token punctuation">,</span> <span class="token string">'ITA'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+    <span class="token punctuation">(</span><span class="token number">101</span><span class="token punctuation">,</span> <span class="token string">'Jack'</span><span class="token punctuation">,</span> <span class="token string">'Hu'</span><span class="token punctuation">,</span> <span class="token string">'CS'</span><span class="token punctuation">,</span> <span class="token string">'US'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+    <span class="token punctuation">(</span><span class="token number">102</span><span class="token punctuation">,</span> <span class="token string">'Steven'</span><span class="token punctuation">,</span> <span class="token string">'Smith'</span><span class="token punctuation">,</span> <span class="token string">'Mathematics'</span><span class="token punctuation">,</span> <span class="token string">'UK'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">(</span><span class="token number">103</span><span class="token punctuation">,</span> <span class="token string">'Mustafa'</span><span class="token punctuation">,</span> <span class="token string">'Demir'</span><span class="token punctuation">,</span> <span class="token string">'Mathematics'</span><span class="token punctuation">,</span> <span class="token string">'TUR'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+    <span class="token punctuation">(</span><span class="token number">104</span><span class="token punctuation">,</span> <span class="token string">'Ekaterina'</span><span class="token punctuation">,</span> <span class="token string">'Mihailov'</span><span class="token punctuation">,</span> <span class="token string">'Physics'</span><span class="token punctuation">,</span> <span class="token string">'RUS'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token punctuation">(</span><span class="token number">105</span><span class="token punctuation">,</span> <span class="token string">'Enrico'</span><span class="token punctuation">,</span> <span class="token string">'Bellucci'</span><span class="token punctuation">,</span> <span class="token string">'CS'</span><span class="token punctuation">,</span> <span class="token string">'ITA'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
+    <span class="token punctuation">(</span><span class="token number">106</span><span class="token punctuation">,</span> <span class="token string">'Gerard'</span><span class="token punctuation">,</span> <span class="token string">'Depardieu'</span><span class="token punctuation">,</span> <span class="token string">'Mathematics'</span><span class="token punctuation">,</span> <span class="token string">'FR'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre><p>Consider following query which executes on this table:</p>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token keyword keyword-SELECT">SELECT</span> major<span class="token punctuation">,</span> ARRAY_AGG<span class="token punctuation">(</span><span class="token keyword keyword-DISTINCT">DISTINCT</span> country<span class="token punctuation">)</span>
+<span class="token keyword keyword-FROM">FROM</span> student_table
+<span class="token keyword keyword-GROUP">GROUP</span> <span class="token keyword keyword-BY">BY</span> major
+<span class="token keyword keyword-HAVING">HAVING</span>  major <span class="token operator">=</span> <span class="token string">'CS'</span><span class="token punctuation">;</span>
+</code></pre><p>The above query collects the different countries that students in the CS department are from. A naive planner would produce following plan for the query above</p>
+<h3 id="naive-plan">Naive Plan </h3>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token operator">+</span><span class="token comment">--------------+----------------------------------------------------------------------------------------------------+</span>
+<span class="token operator">|</span> plan_type    <span class="token operator">|</span> <span class="token keyword keyword-plan">plan</span>                                                                                               <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token comment">--------------+----------------------------------------------------------------------------------------------------+</span>
+<span class="token operator">|</span> logical_plan <span class="token operator">|</span> Projection: student_table<span class="token punctuation">.</span>major<span class="token punctuation">,</span> ARRAY_AGG<span class="token punctuation">(</span>alias1<span class="token punctuation">)</span> <span class="token keyword keyword-AS">AS</span> ARRAY_AGG<span class="token punctuation">(</span><span class="token keyword keyword-DISTINCT">DISTINCT</span> student_table<span class="token punctuation">.</span>country<span class="token punctuation">)</span>    <span class="token operator">|</span>
+<span class="token operator">|</span>              <span class="token operator">|</span>   Filter: student_table<span class="token punctuation">.</span>major <span class="token operator">=</span> Utf8<span class="token punctuation">(</span><span class="token string">"CS"</span><span class="token punctuation">)</span>                                                         <span class="token operator">|</span> 
+<span class="token operator">|</span>              <span class="token operator">|</span>     Aggregate: groupBy<span class="token operator">=</span><span class="token punctuation">[</span><span class="token punctuation">[</span>student_table<span class="token punctuation">.</span>major<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> aggr<span class="token operator">=</span><span class="token punctuation">[</span><span class="token punctuation">[</span>ARRAY_AGG<span class="token punctuation">(</span><span class="token keyword keyword-DISTINCT">DISTINCT</span> student_table<span class="token punctuation">.</span>country<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">|</span>
+<span class="token operator">|</span>              <span class="token operator">|</span>       TableScan: student_table projection<span class="token operator">=</span><span class="token punctuation">[</span>major<span class="token punctuation">,</span> country<span class="token punctuation">]</span>                                         <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token comment">--------------+----------------------------------------------------------------------------------------------------+</span>
+</code></pre><p>However, we do not need to do complex aggregation (<code>ARRAY_AGG(DISTINCT)</code>) for each department. The user is only interested in to the <code>CS</code> department. Hence, It is enough to do the aggregation for just <code>CS</code> department. Hence, we could have used the following plan also for the same task.</p>
+<h3 id="optimized-plan">Optimized Plan </h3>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token operator">+</span><span class="token comment">--------------+--------------------------------------------------------------------------------------------------+</span>
+<span class="token operator">|</span> plan_type    <span class="token operator">|</span> <span class="token keyword keyword-plan">plan</span>                                                                                             <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token comment">--------------+--------------------------------------------------------------------------------------------------+</span>
+<span class="token operator">|</span> logical_plan <span class="token operator">|</span> Projection: student_table<span class="token punctuation">.</span>major<span class="token punctuation">,</span> ARRAY_AGG<span class="token punctuation">(</span>alias1<span class="token punctuation">)</span> <span class="token keyword keyword-AS">AS</span> ARRAY_AGG<span class="token punctuation">(</span><span class="token keyword keyword-DISTINCT">DISTINCT</span> student_table<span class="token punctuation">.</span>country<span class="token punctuation">)</span>  <span class="token operator">|</span>
+<span class="token operator">|</span>              <span class="token operator">|</span>   Aggregate: groupBy<span class="token operator">=</span><span class="token punctuation">[</span><span class="token punctuation">[</span>student_table<span class="token punctuation">.</span>major<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> aggr<span class="token operator">=</span><span class="token punctuation">[</span><span class="token punctuation">[</span>ARRAY_AGG<span class="token punctuation">(</span><span class="token keyword keyword-DISTINCT">DISTINCT</span> student_table<span class="token punctuation">.</span>country<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">|</span>
+<span class="token operator">|</span>              <span class="token operator">|</span>     Filter: student_table<span class="token punctuation">.</span>major <span class="token operator">=</span> Utf8<span class="token punctuation">(</span><span class="token string">"CS"</span><span class="token punctuation">)</span>                                                     <span class="token operator">|</span>
+<span class="token operator">|</span>              <span class="token operator">|</span>       TableScan: student_table projection<span class="token operator">=</span><span class="token punctuation">[</span>major<span class="token punctuation">,</span> country<span class="token punctuation">]</span>                                       <span class="token operator">|</span>
+<span class="token operator">+</span><span class="token comment">--------------+--------------------------------------------------------------------------------------------------+</span>
+</code></pre><p>where filtering is done immediately after source. Please note that, both plans are same in terms of end result. They both produce following correct result</p>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>+-------+-------------------------------------------+
+| major | ARRAY_AGG(DISTINCT student_table.country) |
++-------+-------------------------------------------+
+| CS    | [ITA, US]                                 |
++-------+-------------------------------------------+
+
+</code></pre><p>Let's quantify the complexity of each plan above to compare their efficieny. For doing so, we assume following properties hold:</p>
+<ul>
+<li>Each operator has a linear complexity <code>k*n_input_rows</code>, where <code>k</code> is operator specific constant.</li>
+</ul>
+<p>To quantify complexity assume following statistics are true for the source (Please note that these assumptions doesn't hold for the example source table given):</p>
+<ul>
+<li>Source table has <code>N</code> rows.</li>
+<li>There are <code>M</code> distinct <code>major</code> columns, with equal group sizes (e.g. each distinct <code>major</code> group consists of <code>N/M</code> rows).</li>
+</ul>
+<p>With these assumptions, complexity for the <a href="#naive-plan">naive plan</a> would be</p>
+<table>
+<thead>
+<tr>
+<th>Operator Name</th>
+<th>#rows received</th>
+<th>#rows emitted</th>
+<th>k (complexity)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Table Scan</td>
+<td>N</td>
+<td>N</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Aggregate</td>
+<td>N</td>
+<td>N/M</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Filter</td>
+<td>N/M</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Projection</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>which has the total complexity of <code>5 * N + N/M + 1</code>. Corresponding complexity table for <a href="#optimized-plan">optimized plan</a> is</p>
+<table>
+<thead>
+<tr>
+<th>Operator Name</th>
+<th>#rows received</th>
+<th>#rows emitted</th>
+<th>k (complexity)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Table Scan</td>
+<td>N</td>
+<td>N</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Filter</td>
+<td>N</td>
+<td>N/M</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Aggregate</td>
+<td>N/M</td>
+<td>1</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Projection</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>which has the total complexity of <code>2 * N + 4 * N/M + 1</code>.<br>
+As can be seen, for this example. Pushing the filter down is helpful, with given assumptions.</p>
+<h2 id="formal-analysis">Formal Analysis </h2>
+<p>Let's examine more formally the conditions for when pushing down the filter makes sense. Pushing down the filter can be thought as: Converting following stage</p>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code>Filter: <span class="token operator">&lt;</span>filter conditions<span class="token operator">&gt;</span>
+  Operator
+</code></pre><p>in a plan, into stage below</p>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code>Operator
+  Filter: <span class="token operator">&lt;</span>filter conditions<span class="token operator">&gt;</span>
+</code></pre><p>To be able to do this conversion, following conditions should hold.<br>
+<strong>1.</strong> All of the columns filter expression refers, should be present at the input of the filter.<br>
+<strong>2.</strong> Both of these stages should be guaranteed to generate same result.</p>
+<p>Otherwise, conversion will produce an invalid plan.</p>
+<p><strong>Condition 1</strong> holds as long as filter doesn't refer any expression <code>Operator</code> generates. As an example</p>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code>Filter: a <span class="token operator">=</span> <span class="token number">2</span>
+  Projection <span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span>
+</code></pre><p>can be converted to</p>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code>Projection <span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span>
+  Filter: a <span class="token operator">=</span> <span class="token number">2</span>
+</code></pre><p>However,</p>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code>Filter: c <span class="token operator">=</span> <span class="token number">2</span>
+  Projection <span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">,</span> a <span class="token operator">+</span> b <span class="token keyword keyword-as">as</span> c<span class="token punctuation">)</span>
+</code></pre><p>cannot be converted to</p>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code>Projection <span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">,</span> a <span class="token operator">+</span> b <span class="token keyword keyword-as">as</span> c<span class="token punctuation">)</span>
+  Filter: c <span class="token operator">=</span> <span class="token number">2</span>
+</code></pre><p>Since, <code>Column: c</code> is not available for <code>Filter</code> without <code>Projection</code>.</p>
+<p><strong>Condition 2</strong> holds as long as <code>Filter</code> and <code>Operator</code> are commutative. Most of the operators I know of have this property. However, for <code>Limit</code> this property doesn't hold (First N entries after applying filter and applying filter to the first N entries are different). Hence for <code>Limit</code> operation, filter shouldn't be pushed down through limit.</p>
+<p>When these conditions hold, we can analyze whether this conversion is beneficial or not. To do so, assume:</p>
+<ul>
+<li>Filter condition removes rows with probability: <code>p</code>.</li>
+<li><code>Operator</code> generates <code>r * N</code> rows at its output, given it receives <code>N</code> rows.</li>
+<li>Per row complexity constant for the <code>Operator</code> is <code>r1 * k</code> where <code>k</code> is the per row complexity constant for <code>Filter</code>.</li>
+</ul>
+<p>Complexity table for the <code>Stage 1</code> (the version where <code>Filter</code> is above of the <code>Operator</code>) is:</p>
+<table>
+<thead>
+<tr>
+<th>Operator Name</th>
+<th>#rows received</th>
+<th>#rows emitted</th>
+<th>k (complexity)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Operator</td>
+<td>N</td>
+<td>r * N</td>
+<td>r1 * k</td>
+</tr>
+<tr>
+<td>Filter</td>
+<td>r*N</td>
+<td>N2 * (1-p)</td>
+<td>k</td>
+</tr>
+</tbody>
+</table>
+<p>This table has the complexity <code>N * r1 * k + r * N * k</code> which can be written as <code>N * k * (r1 + r)</code>.</p>
+<p><code>Stage 2</code>, where filter pushed down below <code>Operator</code> has following complexity table</p>
+<table>
+<thead>
+<tr>
+<th>Operator Name</th>
+<th>#rows received</th>
+<th>#rows emitted</th>
+<th>k (complexity)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Filter</td>
+<td>N</td>
+<td>N * (1-p)</td>
+<td>k</td>
+</tr>
+<tr>
+<td>Operator</td>
+<td>N * (1-p)</td>
+<td>r * N * (1-p)</td>
+<td>r1 * k</td>
+</tr>
+</tbody>
+</table>
+<p>Overall complexity for this stage is:<br>
+<code>N * k + N * (1 - p) * r1 * k</code> which can be written as <code>N * k  * (1 + (1 - p) * r1)</code>.</p>
+<p>Comparing these two complexities, we can conclude that as long as<br>
+<code>1 - r &lt;= p * r1</code> holds, pushing down the filter makes sense.<br>
+With this condition in hand, let's consider some common cases</p>
+<h2 id="case-1-r--1">Case 1 <code>r = 1</code>. </h2>
+<p><code>r = 1</code> means that number of rows received and enitted by the operator is same. For these operators, condition for filter pushdown turns into <code>0 &lt;= p * r1</code>. This condition says that as long as <code>Filter</code> condition removes out something (If we are sure that filter doesn't prune anything. We should remove filter from the plan. This is another optimization). We should pushdown filter through this operator. Hence, pushing down the <code>Filter</code> through operators where <code>r = 1</code> such as</p>
+<ul>
+<li><code>Projection</code></li>
+<li><code>Sort</code></li>
+<li><code>Window</code></li>
+</ul>
+<p>is beneficial.</p>
+<h2 id="case-2-r--1">Case 2 <code>r &gt; 1</code>. </h2>
+<p><code>r &gt; 1</code> means that number of rows emitted by the operator is larger than number of rows received by the operator. For these operators, condition for filter pushdown <code>1 - r &lt;= p * r1</code> always holds true. Hence, pushing down the <code>Filter</code> through operators where <code>r &gt; 1</code> such as</p>
+<ul>
+<li><code>Union All</code></li>
+<li><code>CrossJoin</code></li>
+</ul>
+<p>is beneficial.</p>
+<h2 id="case-3-r--1">Case 3 <code>r &lt; 1</code>. </h2>
+<p><code>r &lt; 1</code> means that number of rows emitted by the operator is smaller than number of rows received by the operator. For these operators, condition for filter pushdown <code>1 - r &lt;= p * r1</code> depends on the value of <code>p</code>, <code>r1</code>, and <code>r</code>. However, for common valid cases, where <code>p</code> is not too close to <code>0</code> (e.g. filter condition removes non-negligible part of the rows) and <code>r1</code> is much larger than <code>1</code> (e.g. Complexity constant for the <code>Operator</code> is much larger than that of <code>Filter</code>.). We can conclude that, pushing down the filter is helpful. Hence, as a good rule of thumb pushing down the <code>Filter</code> through operators</p>
+<ul>
+<li><code>Aggregate</code></li>
+<li><code>Join</code> (<code>r</code> value for <code>Join</code> might be larger than 1 also.)</li>
+</ul>
+<p>is beneficial.</p>
+<h3 id="conclusion">Conclusion </h3>
+<p>In this blog post, we have analyzed the conditions when pushing down the filter during planning is beneficial. Filter should be pushed down through an operator, when following conditions hold</p>
+<ul>
+<li>All of the columns filter expression refers, should be present at the input of the filter.</li>
+<li><code>Filter</code> + <code>Operator</code> stage and <code>Operator</code> + <code>Filter</code> stage should generate same results (They should be commutative).</li>
+<li>Pushing down the filter would indeed be more efficient in terms of execution.</li>
+</ul>
+<p>We have seen that, last condition is <code>true</code> for most of the cases. Hence, as a good rule of thumb <code>Filter</code> operation should be close to the source as much as possible.</p>
+<h3 id="references">References </h3>
+<p>1 - <a href="https://arrow.apache.org/datafusion/">Apache Datafusion Documentation</a></p>
+
+      </div>
+      
+      
+    
+    
+    
+    
+    
+    
+  
+    </body></html>
