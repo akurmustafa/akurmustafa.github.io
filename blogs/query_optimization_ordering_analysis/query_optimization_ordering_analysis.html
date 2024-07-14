@@ -27,15 +27,16 @@
 <p><img src="images/balance_order.jpg" alt="clock_header.jpg"></p>
 <h1 id="query-optimization---when-ordering-requirement-is-satisfied">Query Optimization - When Ordering Requirement is Satisfied? </h1>
 <h2 id="introduction">Introduction </h2>
-<p>In following blog post, we will talk about order based optimizations to generate better plans which are critical for generating streaming friendly pipelines. Before doing so I think it is worth to analyze how to determine whether an ordering requirement is satisfied by the existing ordering. This analysis is precondition for order based optimizations and also much more complex than one thinks initially.</p>
+<p>In following blog post, we will talk about order based optimizations to generate better plans which are critical for generating streaming friendly pipelines. Before doing so, I think it is worth to analyze how to determine whether an ordering requirement is satisfied by the existing ordering. This analysis is pre-condition for order based optimizations and also much more complex than one thinks initially.</p>
 <p>However, before reading this blog post I recommend reading the <a href="https://akurmustafa.github.io/blogs/query_optimization_introduction/query_optimization_introduction.html">introduction</a> where</p>
 <ul>
 <li>we discussed the query optimization in general.</li>
-<li>we established pre-requiste concepts for subsequent stages.<br>
-if you are familiar with the concepts above, fell free to continue.</li>
+<li>we established pre-requiste concepts for subsequent stages.</li>
 </ul>
+<p>If you are familiar with the concepts above, fell free to continue.</p>
 <h2 id="example">Example </h2>
-<p>Some of the operators in the physical plan require its input data to be ordered. If this requirement is insatisfied, operator may crash or generate wrong results. If its requirement is not satisfied we may insert a <code>Sort</code> operator to meet its requirement. If requirement is already satisfied, we may continue with current plan without modification. Hence, it is important to determine whether an ordering requirement by the operator is satisfied by the data at its input. Doing this analysis wrongly or ineffectively may cause planner to generate invalid or sub-optimal plans.</p>
+<p>Some of the operators in the physical plan require its input data to be ordered. If its requirement is not satisfied we may insert a <code>Sort</code> operator to meet its requirement. If requirement is already satisfied, we may continue with current plan without modification.</p>
+<p>If we don't insert a Sort operator where we should (because of incorrect analysis), the result generated will be wrong. Alternatively, if we insert a Sort operator where we don't need to, the result generated will be correct but inefficient. Hence, it is important to determine whether an ordering requirement by the operator is satisfied by the data at its input. Doing this analysis wrongly or ineffectively may cause planner to generate invalid or sub-optimal plans.</p>
 <p>As an example, consider <code>SortPreservingMerge: required_ordering: [&lt;expr&gt; &lt;DIR&gt;, ..]</code> operator. This operator takes data from multiple input partitions, then merges these data into single partition according to specied ordering. For this operator to work as desired each of its input should satisfy the required ordering by the operator. Otherwise, resulting data wouldn't have correct ordering.</p>
 <p>If the <code>SortPreservingMerge: [a ASC]</code> operator merges 2 partitions. Each of its input should satisfy ordering <code>[a ASC]</code>. As an example, data from the 1<sup>st</sup> partition would be</p>
 <table>
@@ -105,7 +106,7 @@ if you are familiar with the concepts above, fell free to continue.</li>
 </table>
 <p>by merging these two partitions.</p>
 <h2 id="test-data">Test Data </h2>
-<p>We will use following showcase table as an example. Then we will analyze whether an ordering requirement is satisfied by this table or not (This table can be thought as virtual table between the immediate operators which contains data transferred between them).</p>
+<p>We will use following showcase table as an example. Then we will analyze whether an ordering requirement is satisfied by this table or not (This table can be thought as virtual table between the immediate operators in the physical plan which contains data transferred between them).</p>
 <table>
 <thead>
 <tr>
@@ -217,8 +218,8 @@ if you are familiar with the concepts above, fell free to continue.</li>
 <p>As can be seen from the above valid orderings. Storing all of the valid orderings is wasteful, and contains lots of redundancy. Some of the problems are</p>
 <ul>
 <li>Storing prefix of another valid ordering is redundant. If the table satisfies lexicographical ordering <code>[a1 ASC, a2 ASC]</code>, it already satisfies ordering <code>[a1 ASC]</code> trivially. Hence, once we store <code>[a1 ASC, a2 ASC]</code> we do not need to store <code>[a1 ASC]</code> seperately.</li>
-<li>Using all entries in an <code>EquivalenceGroup</code> is redundant. If we know that ordering <code>[a1 ASC, a2 ASC]</code> is satisfied by the table, table also satisfies <code>[a1 ASC, a2_clone ASC]</code> since <code>a2</code> and <code>a2_clone</code> are equal. Hence, it is enough to use just one <code>column</code>(let's say first column) in an equivalence group during construction of the the valid orderings.</li>
-<li>Constant columns can be inserted into any place inside valid ordering with arbitrary direction (<code>ASC, DESC</code>). Hence, If ordering <code>[a1 ASC, a2 ASC]</code> is valid, <code>[c1 ASC, a1 ASC, a2 ASC]</code>, <code>[c1 DESC, a1 ASC, a2 ASC]</code>, <code>a1 ASC, c1 ASC, a2 ASC</code>, .. are also valid. This is clearly redundant. For this reason, it is better to not use any constant column during existing ordering construction.</li>
+<li>Using all entries in an <code>EquivalenceGroup</code> is redundant. If we know that ordering <code>[a1 ASC, a2 ASC]</code> is satisfied by the table, table also satisfies <code>[a1 ASC, a2_clone ASC]</code> since <code>a2</code> and <code>a2_clone</code> are equal. Hence, it is enough to use just one <code>column</code> (let's say first column) in an equivalence group during the construction of the the valid orderings.</li>
+<li>Constant columns can be inserted into any place inside valid ordering with arbitrary direction (<code>ASC</code>, <code>DESC</code>). Hence, If ordering <code>[a1 ASC, a2 ASC]</code> is valid, orderings: <code>[c1 ASC, a1 ASC, a2 ASC]</code>, <code>[c1 DESC, a1 ASC, a2 ASC]</code>, <code>a1 ASC, c1 ASC, a2 ASC</code>, .. are all also valid. This is clearly redundant. For this reason, it is better to not use any constant column during existing ordering construction.</li>
 </ul>
 <p>In summary,</p>
 <ul>
@@ -244,18 +245,18 @@ if you are familiar with the concepts above, fell free to continue.</li>
 <li>If iteration completes without early exit, ordering is satisfied by existing properties. Otherwise it is not.</li>
 </ul>
 <p>To see algorithm in place, let's look at a concrete example:<br>
-Check whether ordering requirement <code>[c1 DESC, a1 ASC, b1 ASC, a2_clone ASC, b2 ASC, c2 ASC, a2 DESC]</code> is satisfied by the example table above where constants are <code>[c1, c2]</code>, <code>Equivalence Group</code>s are <code>[[a2, a2_clone], [b2, b2_clone]]</code> and <code>Valid Ordering</code>s are <code>[[a1 ASC, a2 ASC], [b1 ASC, b2 ASC]]</code>.</p>
+Check whether the ordering requirement <code>[c1 DESC, a1 ASC, b1 ASC, a2_clone ASC, b2 ASC, c2 ASC, a2 DESC]</code> is satisfied by the example table above where constants are <code>[c1, c2]</code>, <code>Equivalence Group</code>s are <code>[[a2, a2_clone], [b2, b2_clone]]</code> and <code>Valid Ordering</code>s are <code>[[a1 ASC, a2 ASC], [b1 ASC, b2 ASC]]</code>.</p>
 <p>After pruning out constant expressions ordering requirement <code>[c1 DESC, a1 ASC, b1 ASC, a2_clone ASC, b2 ASC, c2 ASC, a2 ASC]</code> turns into <code>[a1 ASC, b1 ASC, a2_clone ASC, b2 ASC, a2 DESC]</code>.</p>
 <p>After normalization, where we convert <code>Column: a2_clone</code> into <code>Column: a2</code> and <code>Column: b2_clone</code> into <code>Column: b2</code>. Ordering requirement turns into <code>[a1 ASC, b1 ASC, a2 ASC, b2 ASC, a2 DESC]</code>.</p>
 <p>After de-duplicating expressions where first encountered entry is kept, requirement turns into <code>[a1 ASC, b1 ASC, a2 ASC, b2 ASC]</code> (Please note that during de-duplication direction is not important as long as expressions match).</p>
 <p>Now, problem is reduced to whether <code>Valid Ordering</code>s <code>[[a1 ASC, a2 ASC], [b1 ASC, b2 ASC]]</code> satisfies ordering requirement <code>[a1 ASC, b1 ASC, a2 ASC, b2 ASC]</code>.</p>
-<p>Then, check whether <code>a1 ASC</code> is among the leading orderings of the <code>Valid Ordering</code>s available. Leading orderings are <code>a1 ASC, b1 ASC</code>. It is so, hence remove <code>a1 ASC</code> from the <code>Valid Ordering</code>: [a1 ASC, a2 ASC].<br>
+<p>Then, check whether <code>a1 ASC</code> is among the leading orderings of the <code>Valid Ordering</code>s available. Leading orderings are <code>a1 ASC, b1 ASC</code>. It is so, hence remove <code>a1 ASC</code> from the <code>Valid Ordering</code>: <code>[a1 ASC, a2 ASC]</code>.<br>
 Now, problem is reduced to whether <code>Valid Ordering</code>s <code>[[a2 ASC], [b1 ASC, b2 ASC]]</code> satisfies ordering requirement <code>[b1 ASC, a2 ASC, b2 ASC]</code>.</p>
-<p>Then check whether <code>b1 ASC</code> is among the leading orderings of the <code>Valid Ordering</code>s available. Leading orderings are <code>a2 ASC, b1 ASC</code>. It is so, hence remove <code>b1 ASC</code> from the <code>Valid Ordering</code>: [b1 ASC, b2 ASC].<br>
+<p>Then check whether <code>b1 ASC</code> is among the leading orderings of the <code>Valid Ordering</code>s available. Leading orderings are <code>a2 ASC, b1 ASC</code>. It is so, hence remove <code>b1 ASC</code> from the <code>Valid Ordering</code>: <code>[b1 ASC, b2 ASC]</code>.<br>
 Now, problem is reduced to whether <code>Valid Ordering</code>s <code>[[a2 ASC], [b2 ASC]]</code> satisfies ordering requirement <code>[a2 ASC, b2 ASC]</code>.</p>
-<p>Then check whether <code>a2 ASC</code> is among the leading orderings of the <code>Valid Ordering</code>s available. Leading orderings are <code>a2 ASC, b2 ASC</code>. It is so, hence remove <code>a2 ASC</code> from the <code>Valid Ordering</code>: [a2 ASC].<br>
+<p>Then check whether <code>a2 ASC</code> is among the leading orderings of the <code>Valid Ordering</code>s available. Leading orderings are <code>a2 ASC, b2 ASC</code>. It is so, hence remove <code>a2 ASC</code> from the <code>Valid Ordering</code>: <code>[a2 ASC]</code>.<br>
 Now, problem is reduced to whether <code>Valid Ordering</code>s <code>[[b2 ASC]]</code> satisfies ordering requirement <code>[b2 ASC]</code>.</p>
-<p>Then check whether <code>b2 ASC</code> is among the leading orderings of the <code>Valid Ordering</code>s available. Leading orderings are <code>b2 ASC</code>. It is so, hence remove <code>b2 ASC</code> from the <code>Valid Ordering</code>: [b2 ASC].<br>
+<p>Then check whether <code>b2 ASC</code> is among the leading orderings of the <code>Valid Ordering</code>s available. Leading orderings are <code>b2 ASC</code>. It is so, hence remove <code>b2 ASC</code> from the <code>Valid Ordering</code>: <code>[b2 ASC]</code>.<br>
 Now, problem is reduced to whether <code>Valid Ordering</code>s <code>[]</code> satisfies ordering requirement <code>[]</code>.</p>
 <p>Since, we end up with an empty requirement it is trivially satisfied. We deem that ordering requirement <code>[c1 DESC, a1 ASC, b1 ASC, a2_clone ASC, b2 ASC, c2 ASC, a2 DESC]</code> is satisfied by the table with properties:</p>
 <ul>
@@ -268,7 +269,8 @@ Now, problem is reduced to whether <code>Valid Ordering</code>s <code>[]</code> 
 <p>To see my other blog posts use <a href="https://akurmustafa.github.io/blog.html">link</a></p>
 <h3 id="references">References </h3>
 <p>1 - <a href="https://arrow.apache.org/datafusion/">Apache Datafusion Documentation</a><br>
-2 - <a href="https://en.wikipedia.org/wiki/Lexicographic_order">Lexicographical Order</a></p>
+2 - <a href="https://en.wikipedia.org/wiki/Lexicographic_order">Lexicographical Order</a><br>
+3 - <a href="https://github.com/apache/datafusion/blob/main/datafusion/physical-expr/src/equivalence/properties.rs">Datafusion Implementation of this Analysis</a></p>
 
       </div>
       
