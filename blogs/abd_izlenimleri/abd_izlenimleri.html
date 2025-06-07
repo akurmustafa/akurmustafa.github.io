@@ -1,0 +1,691 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>ABD İzlenimleri</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(50, 48, 44, 1);
+}
+.highlight-gray {
+	color: rgba(115, 114, 110, 1);
+	fill: rgba(115, 114, 110, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(205, 60, 58, 1);
+	fill: rgba(205, 60, 58, 1);
+}
+.highlight-default_background {
+	color: rgba(50, 48, 44, 1);
+}
+.highlight-gray_background {
+	background: rgba(248, 248, 247, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(248, 243, 252, 1);
+}
+.highlight-pink_background {
+	background: rgba(252, 241, 246, 1);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(115, 114, 110, 1);
+	fill: rgba(115, 114, 110, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(205, 60, 58, 1);
+	fill: rgba(205, 60, 58, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(248, 248, 247, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(248, 243, 252, 1);
+}
+.block-color-pink_background {
+	background: rgba(252, 241, 246, 1);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-uiBlue { background-color: undefined; }
+.select-value-color-pink { background-color: rgba(225, 136, 179, 0.27); }
+.select-value-color-purple { background-color: rgba(168, 129, 197, 0.27); }
+.select-value-color-green { background-color: rgba(123, 183, 129, 0.27); }
+.select-value-color-gray { background-color: rgba(84, 72, 49, 0.15); }
+.select-value-color-translucentGray { background-color: undefined; }
+.select-value-color-orange { background-color: rgba(224, 124, 57, 0.27); }
+.select-value-color-brown { background-color: rgba(210, 162, 141, 0.35); }
+.select-value-color-red { background-color: rgba(244, 171, 159, 0.4); }
+.select-value-color-yellow { background-color: rgba(236, 191, 66, 0.39); }
+.select-value-color-blue { background-color: rgba(93, 165, 206, 0.27); }
+.select-value-color-pageGlass { background-color: undefined; }
+.select-value-color-washGlass { background-color: undefined; }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="200c026c-3486-80e0-8724-ffd6f3e7af1a" class="page sans"><header><h1 class="page-title">ABD İzlenimleri</h1><p class="page-description"></p></header><div class="page-body"><p id="200c026c-3486-80c6-ae94-cc5b5f230455" class="">Yaklaşık 8 aydır doktora öğrencisi olarak ABD’de yaşıyorum. Bu yazıda ABD’deye dair genel izlenimlerimi paylaşmak istiyorum. Türkiyeyle kültürel farkları, beni şaşırtan yönleri gibi noktalara değiniceğim. Daha önce bu yazıya benzer bir perspektiften İran İzlenimlerime dair bir yazı yazmıştım. <a href="https://akurmustafa.github.io/blogs/iran_izlenimleri.html">https://akurmustafa.github.io/blogs/iran_izlenimleri.html</a> sayfasından o yazıya da ulaşabilirsiniz.</p><h2 id="200c026c-3486-80ef-bb75-e6603e2af9cb" class="">Genel İzlenim</h2><p id="200c026c-3486-8010-8412-fd441601de8e" class="">Çocukluğumuzdan beri ABD’de yapılmış bir sürü film, dizi v.b izlediğimiz için genel olarak hepimizin kafasında ABD’ye dair bir beklenti ister istemez oluşuyor. Bu yüzden ABD belki de seyahat ettiğimizde en az şaşıracağımız yerlerden biri. Yine de bir kaç gün kalınca net olarak gözünüze çarpan bir kaç nokta oluyor.</p><h2 id="200c026c-3486-80f6-86f0-d27963e40e65" class="">Sigara, Esrar</h2><p id="200c026c-3486-804a-8775-d2bcf5b63e06" class="">Beni ilk şaşırtan nokta sigara kullanımının azlığı oldu. Hepimizin malumu Türkiye’de sigara kullanımı oldukça yaygın. Sokakta biraz gezseniz veya bi parka falan otursanız mutlaka 5-10 dakika içerisinde sigara içen birini görürsünüz. ABD’de belki de 15-20 günde bir sigara içen birini görüyorum. Sigara kullanımı cidden çok az, içilebilen alanlar da çok kısıtlı. Açık alanların bile büyük kısmında içilemiyor, binalara yakın içemiyorsunuz vesaire. Genel sigara içtiğini gördüğüm kişilerse evsiz veya hippi gibi kişiler. Takım elbisesiyle kahve + sigara yapan henüz birini görmedim. Örnek vermek gerekirse: benim gözlemlerime göre Türkiye’de sigara içmek büyük oranda sosyo-ekonomik bir gösterge değil; ama ABD’de kesinlikle eğitim durumunuza, gelirinize dair net bir gösterge. TODO: ADD Es</p><p id="20bc026c-3486-80c9-a6dc-dd9d9514d782" class="">Sigaradaki hassasiyet maalesef esrar konusunda yok. Esrar kullanımı ciddi olarak yaygın. Gördüğüm kadarıyla evsizler, gençler, hippiler kulanıyor esrarı ağırlıklı olarak. Çok esrar içen insana denk gelmiyorsunuz ama kokusunu vesaire sıkça alıyorsunuz. Özellikle, park, nehir boyu gibi yerlerde esrar kokusu almak gayet olası. Büyük ihtimal, esrar kokusu sigaraya nazaran çok daha kalıcı ve yayılabiliyor. Bu nedenle etkisini daha çok görüyorsunuz.</p><h2 id="200c026c-3486-807d-b5a5-e5c19550356d" class="">Evsizler</h2><p id="200c026c-3486-8010-a020-c1d2c68f8bb5" class="">Bir diğer konu ise evsizler. Bu durum zaten oldukça konuşulan ve herkesin malumu olan bir konu. Benim de gelirken kimi beklentilerim vardı. Ama yine de insan görünce baya şaşırıyor. Bu konunun dolaylı etkilerini de fark ediyorsunuz sonrasında. Şehir merkezlerinde aşağıdaki gibi görüntüleri sıkça görüyorsunuz</p><figure id="200c026c-3486-805a-8049-cdb0d4c930b3" class="image"><a href="images/b3657da1-8f0b-43b5-990a-e13c6ed2c7a1.png"><img style="width:383.4009360374415px" src="images/b3657da1-8f0b-43b5-990a-e13c6ed2c7a1.png"/></a></figure><p id="200c026c-3486-80bf-a57a-fc9128d24603" class="">Örneğin evsiz çok fazla olduğu için hava karardıktan sonra insanlar kimi caddelere, sokaklara v.b gitmekten çekiniyorlar özellikle şehir merkezinde. Bu da saat 8-9’dan sonra herkesin evlere çekilmesine veya dışarda bir aktivite yapılıyorsa bar v.b. bi yere gitmesine sebep oluyor. Ben Taksim, İstiklal gibi gece 12’de, 1’de bile gidebileceğin bir yer görmedim. Genel olarak açık yerler de sadece barlar vesaire. Akşam 8-9’dan sonra büfe, cafe, restoran tarzı yerler pek açık olmuyor.</p><p id="200c026c-3486-800f-9e81-e63c109ee56d" class="">Evsizler genelde hava durumunun iyi, gündüzlerin uzun olduğu yerlerde yaşıyorlar. Büyük ihtimal geceleri çok üşümemek için uyumayıp gündüzleri uyuyorlar. Toplu taşımada otobüs, metro gibi yerlerde evsizle karşılaşmanız gayet olası. Genelde koltuklara kurulup ya uyuyorlar ya da uyuşturucu etkisi altında kendilerinden geçmiş halde duruyorlar. Burada evsizlerin bir çoğunun uyuşturucu bağımlısı veya zihinsel engelli (tam olmasa bile spektrumun bir yerinde) kişiler ağırlıklı olduğunu söylemekte fayda var. Yanlarında genelde market arabası veya çuval gibi bir şey içinde eşyalarını taşıyorlar. Evsizlerin çok kullanması, yetersiz bakımlar v.b sebeplerden dolayı genellikle toplu taşıma kirli, kötü kokulu bir halde. Durum böyle olunca insanlar da toplu taşıma kullanmaktan çekiniyor özellikle belli saatlerde ve belli hatlarda. Bu ve benzeri nedenlerle toplu taşıma çok az kullanılıyor benim gördüğüm kadarıyla. Genelde kapasitenin %15-20’si ancak dolu oluyor. Şu ana kadar ayakta durmak zorunda olduğum bir yolculuk hatırlamayorum (ama koltukların kirinden v.b ayakta durduğum oldu maalesef). </p><p id="200c026c-3486-8011-a67b-fd15ea1ff2d2" class="">Çoğu insanın (benim de) buna tepkisi de kayıtsızlık, görmezden gelme. Evsizler yok gibi davranılıyor. Örneğin yerde yatan bi evsiz görünce yanından geçip gidiyorsunuz. Belki karşı kaldırıma geçiyorsunuz. Bazen market gibi yerlerin önünde bekliyorlar insanlar bir şey verir diye. Kimilerinin önünde (’açım’, ‘yiyecek verin’ gibi şeyler yazıyor), ama ilginç bi şekilde bunun dışında sözel olarak dilenme çok görmedim. </p><p id="200c026c-3486-80c8-a9e2-fa6ec9977dba" class="">Beni şaşırtan bir diğer konu da evcil hayvanlı evsizler oldu. Kimi evsizlerin köpeği veya kedisi var. Yanlarında taşıdıkları market arabasında onları da gezdiriyorlar. ABD’de kimi insanların hayvanlarla kurduğu bağ cidden ilginç. Bence bu durum da bu bağın bi yansıması.</p><h2 id="200c026c-3486-8056-825f-e91722a457de" class="">Sokak Hayvanları, Evcil Hayvanlar</h2><p id="20bc026c-3486-80c5-9356-ecb546eb2e47" class="">Evcil hayvan sahipliği (genelde köpekler) cidden çok yaygın. Akşam 5-6 gibi dışarı çıkınca bi köpek (ve sahipleri) trafiğiyle karşılaşıyorsunuz. Parkların, apartmanların içerisinde evcil hayvan dışkısını toplamak için poşet vesaire konuyor. Şehrin içinde biraz dolaşınca evcil hayvan kuaförü, oteli v.b. evcil hayvanlara hizmet veren işletmeler görüyorsunuz. Türkiye’de de evcil haycan sahipliği giderek artıyor; can benim gördüğüm kadarıyla Türkiye’de genelde evcil haycanlar sokak hayvanlarının sahiplenilmesi (özellikle kediler) veya başka bi evcil hayvanın çocuklarının sahiplenilmesiyle oluyor. Burada benim gördüğüm, baya bi endüstri var insanlar isteklerine göre satın alıyor. Bu nedenle bir sürü farklı cins hayvan görüyorsunuz. Cidden çok ilginç, hayatımda görmediğim cins hayvanları bir iki gün içerisinde gördüm. Bizdeki “karabaş”, “tekir“ gibi cinsleri neredeyse hiç görmedim. Hayvanlar genelde “fancy“ cinsler gözlemime göre. </p><div id="20bc026c-3486-8088-9bd1-d6a7b89f76b2" class="column-list"><div id="20bc026c-3486-80fd-8754-f09d051eda71" style="width:50%" class="column"><figure id="20bc026c-3486-80a3-9f9a-c582e5755772" class="image"><a href="images/image.png"><img style="width:336px" src="images/image.png"/></a></figure></div><div id="20bc026c-3486-808b-bb20-c3a13602c579" style="width:50%" class="column"><figure id="20bc026c-3486-8007-8cab-ef0f0eba44b3" class="image"><a href="images/image%201.png"><img style="width:336px" src="images/image%201.png"/></a></figure></div></div><p id="20bc026c-3486-80e7-9ed4-eec235f357e4" class="">Evcil hayvanlar çok fazla sahiplerinin hayatının içinde. Örneğin bi cafede köpeğiyle oturan, markette evcil hayvanıyla alışveriş yapan, koşusunu hayvanıyla yapan, hikinge hayvanıyla giden birini çok rahat görebilirsiniz. Bizde genelde kimi yerlere evcil hayvanlar çok götürülmüyor yazılı olmayan kural olarak.</p><p id="20bc026c-3486-8015-a9e7-c5367a80f474" class="">Bunun yanında sokak hayvanı hiç yok. Büyük ihtimal direk toplanıyor başı boş kedi, köpekler. Sadece bazen nehir kenarlarında kaz, ördek vesaire görüyorsunuz. Onların tabi sahipleri yok ama belediye vesaire bi şekilde gözetiyor onları.</p><figure id="20bc026c-3486-80de-84d8-ec36705c398a" class="image"><a href="images/image%202.png"><img style="width:432px" src="images/image%202.png"/></a></figure><p id="20bc026c-3486-8045-8265-e673bb9339a5" class="">
+</p><h2 id="200c026c-3486-80cb-85f5-d4463b6ec82d" class="">Şehir, Mimari</h2><p id="200c026c-3486-80ed-b843-ed93b2d17f98" class="">
+</p><p id="200c026c-3486-8095-b7b8-ca03d7606285" class="">Mimari olarak ilk göze çarpan noktalardan biri de şehirlerin grid yapısı. Yollar grid olarak döşeli ve yolların içerisinde kalan adalarda da konutlar, vesaire var. Ana yollar harici çoğunlukla tek yön yol. Zıt yöndeki yol genelde bi paraleldeki yol vesaire oluyor. Bana görünce bu mantıklı geldi, trafiği azaltan bir uygulama sanki. Tabi bunu uygulamak için de yolların çok nizami olması gerekli. Bir de navigasyon uygulaması olmadan araç sürmeyi zorlaştırıyor olabilir özellikle aşina olmadığınız yerlerde.</p><p id="20bc026c-3486-8039-81a9-f033c912bea7" class="">Trafik lambaları yolun karşısında genelde aşağıdaki gibi.</p><figure id="20bc026c-3486-808c-a62c-c211098350cf" class="image"><a href="images/image%203.png"><img style="width:624px" src="images/image%203.png"/></a></figure><p id="20bc026c-3486-80a2-9f62-ed590851278d" class="">Türkiye’de bazen lambanın çok yakınına durursun. Işığı görmek için ön cama çok yaklaşmak vesaire gerekir. Bana ABD’dedeki sistem daha mantıklı ve kullanışlı geldi.</p><h2 id="20bc026c-3486-80cc-9cdd-e6c20bf0a06f" class="">Sağlık, Spor</h2><p id="20bc026c-3486-808b-9a42-f6303a1672b1" class="">Eğitimli ve gelir seviyesi yüksek olanlar sağlıklarına çok düşkün. Beslenme, spor gibi konular hayatlarının önemli bir kısmı. İşe bisikletle gitme, koşma, fitness, yüzme gibi aktiviteler çok yaygın. İnsanların hatrı sayılır kısmı neredeyse profesyonel sporcu seviyesinde fit. Bunun yanında obezite de oldukça yaygın. Bazen yolda, sokakta, işte ciddi derecede (Türkiye’de çok nadir göreceğiniz seviyede) kilolu insanlar görüyorsunuz. Benim gözlemime göre obezite ABD’de baya sosyo ekonomik bi problem. Üst kesimlerde bu problem neredeyse yok denecek kadar az. Burada ırklara göre de bariz bi fark benim gözlemime göre. Asyalılarda (Çinlilerde, Hindiler, Japonlar, v.b) aşırı kilolu yok denecek kadar az. Bunun yanında siyahlarda, hispaniklerde bu oran diğer kesimlere göre daha fazla gibi. Büyük ihtimal en büyük faktör sosyoekonomik durum.</p><p id="20bc026c-3486-8090-99a6-e45528a1f36f" class="">Bir diğer faktörde Türkiye’ye göre ortalama boy farkı. Örneğin Türkiye’de 1.95 boyunda birini %1 görüyorsanız, ABD’de belki de %2 oranında görüyorsunuz. Benzer şekilde 1.70 boyunda birini %10 görüyorsanız, ABD’de bu oran %5 belki de. Türkiye’de bu oranlar jenerasyonlar arasında da çok değişiyor. Örneğin Türkiye’de 1.95 boyunda 80 yaşında birini çok nadir görürken, ABD’de görece daha yaygın. Gözlemime göre ABD’de Jenerasyonlar arasındaki boy-kilo farkı bizdeki kadar dramatik değil.</p><h2 id="20bc026c-3486-803a-a7fc-ccf907ba80ec" class="">Göçmenler</h2><p id="20bc026c-3486-804f-abfa-daa183d3871d" class="">Gelmeden önce iki tip göçmen profili olduğunu düşünüyordum. </p><p id="20bc026c-3486-80ef-a3ed-cc0d20f3ef86" class="">İlki az gelişmiş, gelişmekte olan ülkelerden gelişmiş olan ülkelere doğru yapılan beyin göçü veya eğitim amaçlı göç. Çin, Hindistan, Pakistan, İran, Türkiye v.b ülkelerden yapılan göç. </p><p id="20bc026c-3486-8068-be20-cffacabd4653" class="">İkincisi ucuz iş gücü olarak, ABDlilerin çok hevesli olmadığı işleri yapmak için gelen insanlar. Meksika, güney Amerika v.b’den yapılan göç. </p><p id="20bc026c-3486-8084-947c-d97ca0439b08" class="">Bu profillerler büyük oranda doğru ancak hiç beklemeyeceğim oranda İngiltere’den, Almanya’dan, Kanada’dan vesaire insan da görüyorum. Sanırım kimi sektörlerde ABD’dedeki iş imkanlarıyla, dünyanın geri kalanı baya açılmış durumda. Avrupa’dan bile hatrı sayılır insan ABD’ye göç ediyor daha çok iş imkanı v.b. sebeplerle.</p><h2 id="20bc026c-3486-8044-9903-ea4fcfed965e" class="">Hippiler, Marjinaller</h2><p id="20bc026c-3486-8061-b88e-ea13d14a4dc7" class="">Türkiye’ye kıyasla çok daha fazla marjinal insanla karşılaşıyorsunuz. Örneğin kolunun tamamı dövmeyle kaplı birini, yüzü piercingli birini çok daha sık görüyorsunuz. Hayatının bir döneminde karavanda yaşamış, 1 yıl backpack gezmiş insanlarla çok daha fazla karşılaşıyorsunuz. Tabi hala bu profildeki insanlar çoğunluk değil ama yine de Türkiye’den çok daha yaygın. </p><h2 id="20bc026c-3486-80a8-8812-e31884c0e8f7" class="">Yaşlılar</h2><p id="20bc026c-3486-80c5-ad98-c333553560ca" class="">Yaşlı insanlar günlük hayatın çok daha içerisinde. Türkiye’de özellikle büyük şehirlerde çok fazla yaşlı kişiyle karşılaşmazsınız (En azından benim için) özellikle kimi yerlerde. Örneğin pazarda, markette, camide, parkta karşılaşabilirsiniz; ama bi kafede, restoranda daha nadir karşılaşırsınız. Burada bunun gibi bir ayrım görmedim. Sosyolojik profil olarak da yaşlılar ve gençler arasında bariz bi fark yok. Örneğin ABD’de Iphone telefonu olan, Apple watch kullanan, şort giyen, “blue jean“ giyen, saçı yeşile boyalı yaşlı birini görebilirsiniz. Türkiye gelişmekte olan bi ülke olduğu için jenerasyonlar arası fark çok fazla bu nedenle yaşlılarla ve gençlerin giyim-kuşam, kullandığı kelimeler, diksiyon, dindarlık v.b. gibi bir çok farkı var. ABD’de bu farklar çok daha az. Benim görebildiğim tek bariz fark dövme kullanımı. Tabi görünür olmayan muhafazakarlık, dindarlık, politik vesaire farklar kesinlikle var; ancak bunları kendim gözlemleyemedim.</p><h2 id="20bc026c-3486-80cd-8714-c513d1a27697" class="">Diğer - Random</h2><p id="20bc026c-3486-80c6-b35c-da441b309691" class="">ABD’liler amerikan kültürüne çok hakim değil:) Şaka bir yana iç güdüsel olarak farkında olmadan bir ülkenin vatandaşı o ülkenin elçisi gibi bir beklenti oluyor. Örneğin siz bir ABD’liden çok daha fazla NBA, CNBC-e dizisi, Holywood filmi, talk show izlemiş olabilirsiniz. Bi eyaletin yerini, o eyaletin neyi meşhur daha iyi biliyor olabilirsiniz. Benden söylemesi.</p><p id="20bc026c-3486-80cb-a080-c1d39f481bb6" class="">
+</p><p id="20bc026c-3486-803d-8e92-d1d76e4d546d" class="">Yazı her ne kadar gördüğüm farklara odaklı olsa da ABD beklentilerimden çok da farklı değildi. Ben ABD’ye gelince çok farklı bi yere, farklı bi dünyaya gelmiş hissini almadım. Özellikle kalıcı olmayı düşünmüyorsanız, ABD’ye eğitim almak için, bir kaç yıl çalışmak için, staj için vesaire gönül rahatlığıyla gelebilirsiniz. İngilizceniz iyiyse rahatça adapte olabilirsiniz.</p><p id="20bc026c-3486-8044-80da-feef2d75125d" class="">
+</p><p id="20bc026c-3486-802d-9add-c629f8509b3c" class="">
+</p><p id="20bc026c-3486-809a-b185-f13f96c0e73e" class="">
+</p><p id="20bc026c-3486-80bc-8102-d103917e53c7" class="">
+</p><p id="20bc026c-3486-801f-87f3-cd27dcd6a3b6" class="">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
