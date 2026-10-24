@@ -25,7 +25,7 @@ NAV_ITEM_TEMPLATE = """\
             <a class="{css_class}" href="{href}">{label}</a>
           </li>"""
 
-COLUMN_CLASS = "col-lg-{width} col-sm-12 col-md-9"
+COLUMN_CLASS = "col-lg-{width} col-sm-12 col-md-11"
 # Blank space at the bottom of long pages, so the text doesn't end at the very
 # bottom of the window.
 BOTTOM_SPACING_LINES = 9
@@ -35,7 +35,7 @@ BOTTOM_SPACING_LINES = 9
 class Page:
     name: str  # path of the page without extension, relative to the repo root
     nav_key: str  # navbar entry highlighted on this page
-    width: int = 8  # Bootstrap column width on large screens
+    width: int = 10  # Bootstrap column width on large screens
     bottom_spacing: int = 0  # number of trailing <br>s
 
 
@@ -44,13 +44,13 @@ def blog_post(name):
 
 
 PAGES = [
-    Page("about", "about", width=6),
+    Page("about", "about", width=8),
     Page("blog", "blog"),
-    Page("contact", "contact", width=6),
+    Page("contact", "contact", width=8),
     Page("index", "home", bottom_spacing=4),
-    Page("publications", "publications", width=9),
-    Page("recommendations", "recommendations", width=9, bottom_spacing=BOTTOM_SPACING_LINES),
-    Page("resume", "resume", width=9),
+    Page("publications", "publications", width=11),
+    Page("recommendations", "recommendations", width=11, bottom_spacing=BOTTOM_SPACING_LINES),
+    Page("resume", "resume", width=11),
     blog_post("thinking_outside_the_box"),
     blog_post("you_gotta_have_steel_in_the_wall"),
     blog_post("kral_ciplak"),
