@@ -26,15 +26,15 @@
       
 <p><img src="images/clock_header.jpg" alt="clock_header.jpg"></p>
 <h1 id="query-optimization---introduction">Query Optimization - Introduction </h1>
-<p>In this series of blog posts. I will talk about query optimization in general. However, before doing so; In this blog post we will cover</p>
+<p>In this series of blog posts, I will talk about query optimization in general. However, before doing so, in this blog post we will cover</p>
 <ul>
 <li>SQL</li>
 <li>Logical Plan, Physical Plan</li>
 <li>How to read a Plan</li>
 <li>Motivating Example for query optimization</li>
 </ul>
-<p>These topics will lay the foundation for query optimization, will establish a common vocabulary and hopefully make reader motivate for subsequent parts.</p>
-<p>In subsequent parts: I plan to cover following optimizations:</p>
+<p>These topics will lay the foundation for query optimization, will establish a common vocabulary and hopefully make the reader motivated for subsequent parts.</p>
+<p>In subsequent parts, I plan to cover the following optimizations:</p>
 <ul>
 <li><a href="https://akurmustafa.github.io/blogs/query_optimization_filter_pushdown/query_optimization_filter_pushdown.html">Filter Pushdown</a></li>
 <li>Projection Optimization</li>
@@ -44,18 +44,18 @@
 <li>Join re-ordering</li>
 </ul>
 <h2 id="what-is-sql">What is SQL: </h2>
-<p>SQL (Structured Query Language) is a descriptive language that is used to interact with databases. An SQL query specifies the desired output by the user. However, it doesn’t specify how to calculate desired output during execution. As an example, following SQL query:</p>
+<p>SQL (Structured Query Language) is a descriptive language that is used to interact with databases. An SQL query specifies the desired output by the user. However, it doesn’t specify how to calculate the desired output during execution. As an example, the following SQL query:</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token keyword keyword-SELECT">SELECT</span> name<span class="token punctuation">,</span> surname
 <span class="token keyword keyword-FROM">FROM</span> student_table
 <span class="token keyword keyword-WHERE">WHERE</span> major<span class="token operator">=</span><span class="token string">'Mathematics'</span>
 <span class="token keyword keyword-ORDER">ORDER</span> <span class="token keyword keyword-BY">BY</span> id<span class="token punctuation">;</span>
-</code></pre><p>can be translated to english as</p>
+</code></pre><p>can be translated to English as</p>
 <blockquote>
-<p>Bring me the name, and surnames of the each student who majors in Mathematics where result is ordered by student id.</p>
+<p>Bring me the name, and surnames of each student who majors in Mathematics where the result is ordered by student id.</p>
 </blockquote>
-<p>However, it says nothing about how to accomplish this. For most of the queries, especially for complex queries there are many possible ways to calculate desired result with various tradeoffs.</p>
-<p>From this specification, a query is pretty opaque to end user which is fine for most of the users who don’t and shouldn’t care. However, if we work on performance and optimization. We need to inspect internals of the query execution better. <code>LogicalPlan</code> and <code>PhysicalPlan</code> enables us to see what a query does, how it executes in a friendly format.</p>
-<p>Before continuing, in case anyone wants to try out the same queries locally. Here is the query to generate necessary table locally.</p>
+<p>However, it says nothing about how to accomplish this. For most of the queries, especially for complex queries there are many possible ways to calculate the desired result with various tradeoffs.</p>
+<p>From this specification, a query is pretty opaque to the end user which is fine for most of the users who don’t and shouldn’t care. However, if we work on performance and optimization, we need to inspect the internals of the query execution better. <code>LogicalPlan</code> and <code>PhysicalPlan</code> enable us to see what a query does, how it executes in a friendly format.</p>
+<p>Before continuing, in case anyone wants to try out the same queries locally, here is the query to generate the necessary table locally.</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token keyword keyword-CREATE">CREATE</span> <span class="token keyword keyword-TABLE">TABLE</span> <span class="token keyword keyword-IF">IF</span> <span class="token operator">NOT</span> <span class="token keyword keyword-EXISTS">EXISTS</span> student_table<span class="token punctuation">(</span>id <span class="token keyword keyword-INT">INT</span><span class="token punctuation">,</span> name <span class="token keyword keyword-VARCHAR">VARCHAR</span><span class="token punctuation">,</span> surname <span class="token keyword keyword-VARCHAR">VARCHAR</span><span class="token punctuation">,</span> major <span class="token keyword keyword-VARCHAR">VARCHAR</span><span class="token punctuation">,</span> country <span class="token keyword keyword-VARCHAR">VARCHAR</span><span class="token punctuation">)</span> 
      <span class="token keyword keyword-AS">AS</span> <span class="token keyword keyword-VALUES">VALUES</span><span class="token punctuation">(</span><span class="token number">103</span><span class="token punctuation">,</span> <span class="token string">'Mustafa'</span><span class="token punctuation">,</span> <span class="token string">'Demir'</span><span class="token punctuation">,</span> <span class="token string">'Mathematics'</span><span class="token punctuation">,</span> <span class="token string">'TUR'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
               <span class="token punctuation">(</span><span class="token number">101</span><span class="token punctuation">,</span> <span class="token string">'Jack'</span><span class="token punctuation">,</span> <span class="token string">'Hu'</span><span class="token punctuation">,</span> <span class="token string">'CS'</span><span class="token punctuation">,</span> <span class="token string">'US'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
@@ -63,9 +63,9 @@
               <span class="token punctuation">(</span><span class="token number">102</span><span class="token punctuation">,</span> <span class="token string">'Steven'</span><span class="token punctuation">,</span> <span class="token string">'Smith'</span><span class="token punctuation">,</span> <span class="token string">'Mathematics'</span><span class="token punctuation">,</span> <span class="token string">'UK'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
               <span class="token punctuation">(</span><span class="token number">104</span><span class="token punctuation">,</span> <span class="token string">'Ekaterina'</span><span class="token punctuation">,</span> <span class="token string">'Mihailov'</span><span class="token punctuation">,</span> <span class="token string">'Physics'</span><span class="token punctuation">,</span> <span class="token string">'RUS'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-</code></pre><p>Also please note that I execute these queries using <a href="https://arrow.apache.org/datafusion/user-guide/cli.html">cli</a> tool of <a href="https://arrow.apache.org/datafusion/">Apache Datafusion</a>. This is the system I am most familiar with, However results and corresponding queries should be (almost) same in other query engines (configuration options might be pretty different though).</p>
+</code></pre><p>Also please note that I execute these queries using <a href="https://arrow.apache.org/datafusion/user-guide/cli.html">cli</a> tool of <a href="https://arrow.apache.org/datafusion/">Apache DataFusion</a>. This is the system I am most familiar with. However, results and corresponding queries should be (almost) the same in other query engines (configuration options might be pretty different though).</p>
 <h2 id="logical-plan---physical-plan">Logical Plan - Physical Plan </h2>
-<p>A <code>LogicalPlan</code> contains the necessary logical steps to compute query result. However, this representation is in high level, and omits lots of details related to the actual execution. I like to think <code>LogicalPlan</code> more like pseudo code, where you can see the general picture without bogging down in detail or specificities. In contrast <code>PhysicalPlan</code> is more like implementation of a pseudocode in a specific language. Anyone knowing the internals of the query engine can understand what is going on (like reading a code) by reading the <code>PhysicalPlan</code>. However, for this blog post <code>Logical Plan</code> representation will be enough for our use cases. Let’s see the<code>Logical Plan</code>  Datafusion generates for the query above by executing following command:</p>
+<p>A <code>LogicalPlan</code> contains the necessary logical steps to compute the query result. However, this representation is in high level, and omits lots of details related to the actual execution. I like to think of <code>LogicalPlan</code> more like pseudo code, where you can see the general picture without bogging down in detail or specificities. In contrast <code>PhysicalPlan</code> is more like an implementation of a pseudocode in a specific language. Anyone knowing the internals of the query engine can understand what is going on (like reading a code) by reading the <code>PhysicalPlan</code>. However, for this blog post <code>Logical Plan</code> representation will be enough for our use cases. Let’s see the <code>Logical Plan</code>  DataFusion generates for the query above by executing the following command:</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token comment">-- Generate only logical plan</span>
 <span class="token keyword keyword-set">set</span> datafusion<span class="token punctuation">.</span><span class="token keyword keyword-explain">explain</span><span class="token punctuation">.</span>logical_plan_only <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
 
@@ -74,7 +74,7 @@
 <span class="token keyword keyword-FROM">FROM</span> student_table
 <span class="token keyword keyword-WHERE">WHERE</span> major<span class="token operator">=</span><span class="token string">'Mathematics'</span>
 <span class="token keyword keyword-ORDER">ORDER</span> <span class="token keyword keyword-BY">BY</span> id<span class="token punctuation">;</span>
-</code></pre><p>where original query is prepended with <code>EXPLAIN</code> keyword and configuration is set logical plan only mode to not clutter result with physical plan for now. Command above produces following <code>Logical Plan</code>:</p>
+</code></pre><p>where the original query is prepended with <code>EXPLAIN</code> keyword and configuration is set to logical plan only mode to not clutter the result with physical plan for now. Command above produces the following <code>Logical Plan</code>:</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token operator">+</span><span class="token comment">--------------+-----------------------------------------------------------------------------+</span>
 <span class="token operator">|</span> plan_type    <span class="token operator">|</span> <span class="token keyword keyword-plan">plan</span>                                                                        <span class="token operator">|</span>
 <span class="token operator">+</span><span class="token comment">--------------+-----------------------------------------------------------------------------+</span>
@@ -84,18 +84,18 @@
 <span class="token operator">|</span>              <span class="token operator">|</span>       Filter: student_table<span class="token punctuation">.</span>major <span class="token operator">=</span> Utf8<span class="token punctuation">(</span><span class="token string">"Mathematics"</span><span class="token punctuation">)</span>                     <span class="token operator">|</span>
 <span class="token operator">|</span>              <span class="token operator">|</span>         TableScan: student_table projection<span class="token operator">=</span><span class="token punctuation">[</span>id<span class="token punctuation">,</span> name<span class="token punctuation">,</span> surname<span class="token punctuation">,</span> major<span class="token punctuation">]</span>      <span class="token operator">|</span>
 <span class="token operator">+</span><span class="token comment">--------------+-----------------------------------------------------------------------------+</span>
-</code></pre><p>A <code>Logical Plan</code> contains the necessary steps to produce the desired result according to specifications of the SQL query, where each step is represented as single line and executes from bottom to top. To better understand this representation, let’s look the equivalent <code>Logical Plan</code> as tree.</p>
+</code></pre><p>A <code>Logical Plan</code> contains the necessary steps to produce the desired result according to specifications of the SQL query, where each step is represented as a single line and executes from bottom to top. To better understand this representation, let’s look at the equivalent <code>Logical Plan</code> as a tree.</p>
 <p><img src="images/logical_plan_tree.png" alt="logical_plan_tree.png"></p>
-<p>where each arrow show the data flow during execution. These two representations are completely same. In the first representation dependency between operators are specified by the indentation level (e.g The operator(s) with 2 indentation level ahead of an operator is the child(ren) of the operator). First representation is more concise, more text friendly. However, it maybe intimidating at the start. Second representation is more friendly, however fills up lots of space.</p>
-<p>Logical Plan above describes following steps in order</p>
+<p>where each arrow shows the data flow during execution. These two representations are completely the same. In the first representation dependency between operators is specified by the indentation level (e.g The operator(s) with 2 indentation level ahead of an operator is the child(ren) of the operator). First representation is more concise, more text friendly. However, it may be intimidating at the start. Second representation is more friendly, however fills up lots of space.</p>
+<p>Logical Plan above describes the following steps in order</p>
 <ul>
-<li>Scan the each row of the original table, where only columns: <code>id, name, surname, major</code> are used.</li>
+<li>Scan each row of the original table, where only columns: <code>id, name, surname, major</code> are used.</li>
 <li>Among scanned rows, just keep the rows where <code>major</code> is ‘Mathematics’.</li>
 <li>Shuffle columns such that new column order is <code>name</code>, <code>surname</code>, <code>id</code> respectively, where column <code>major</code> is pruned also.</li>
-<li>Sort constructed rows according to id columns</li>
+<li>Sort constructed rows according to the id column</li>
 <li>Shuffle columns such that new column order is <code>name</code>, <code>surname</code> respectively, where column <code>id</code> is pruned.</li>
 </ul>
-<p>To see what is going on better, let’s see the data that is passed between operators. At the source(this can be a file, a kafka topic, etc.) following table resides</p>
+<p>To see what is going on better, let’s see the data that is passed between operators. At the source(this can be a file, a Kafka topic, etc.) the following table resides</p>
 <table>
 <thead>
 <tr>
@@ -144,7 +144,7 @@
 </tr>
 </tbody>
 </table>
-<p><code>TableScan</code> operator emits following table to its output (where <code>Column=country</code> is pruned.)</p>
+<p><code>TableScan</code> operator emits the following table to its output (where <code>Column=country</code> is pruned.)</p>
 <table>
 <thead>
 <tr>
@@ -187,7 +187,7 @@
 </tr>
 </tbody>
 </table>
-<p><code>Filter</code> operator emits following table</p>
+<p><code>Filter</code> operator emits the following table</p>
 <table>
 <thead>
 <tr>
@@ -218,8 +218,8 @@
 </tr>
 </tbody>
 </table>
-<p>where 2<sup>nd</sup>, 5<sup>th</sup> row in the input table is removed, since their <code>major</code> value is not <code>Mathematics</code><em>.</em></p>
-<p>First <code>Projection</code> emits following table</p>
+<p>where 2<sup>nd</sup>, 5<sup>th</sup> rows in the input table are removed, since their <code>major</code> value is not <code>Mathematics</code><em>.</em></p>
+<p>First <code>Projection</code> emits the following table</p>
 <table>
 <thead>
 <tr>
@@ -247,7 +247,7 @@
 </tbody>
 </table>
 <p>where <code>Column</code>: <code>major</code> is removed, then  columns are re-ordered.</p>
-<p><code>Sort</code> operator emit following table, where rows are re-ordered such that id column is Ascending.</p>
+<p><code>Sort</code> operator emits the following table, where rows are re-ordered such that id column is Ascending.</p>
 <table>
 <thead>
 <tr>
@@ -274,7 +274,7 @@
 </tr>
 </tbody>
 </table>
-<p>Then, final <code>Projection</code> emits following table:</p>
+<p>Then, final <code>Projection</code> emits the following table:</p>
 <table>
 <thead>
 <tr>
@@ -297,12 +297,12 @@
 </tr>
 </tbody>
 </table>
-<p>where id column <code>id</code> removed. This is the result seen at the output by the user. For the query</p>
+<p>where id column <code>id</code> is removed. This is the result seen at the output by the user. For the query</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token keyword keyword-SELECT">SELECT</span> name<span class="token punctuation">,</span> surname
 <span class="token keyword keyword-FROM">FROM</span> student_table
 <span class="token keyword keyword-WHERE">WHERE</span> major<span class="token operator">=</span><span class="token string">'Mathematics'</span>
 <span class="token keyword keyword-ORDER">ORDER</span> <span class="token keyword keyword-BY">BY</span> id<span class="token punctuation">;</span>
-</code></pre><p>Datafusion emits following result:</p>
+</code></pre><p>DataFusion emits the following result:</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token operator">+</span><span class="token comment">---------+-----------+</span>
 <span class="token operator">|</span> name    <span class="token operator">|</span> surname   <span class="token operator">|</span>
 <span class="token operator">+</span><span class="token comment">---------+-----------+</span>
@@ -310,7 +310,7 @@
 <span class="token operator">|</span> Mustafa <span class="token operator">|</span> Demir     <span class="token operator">|</span>
 <span class="token operator">|</span> Gerard  <span class="token operator">|</span> Depardieu <span class="token operator">|</span>
 <span class="token operator">+</span><span class="token comment">---------+-----------+</span>
-</code></pre><p>If we carefully track data passed between operators we can see that only absolutely necessary data is passed between operators which is good. To see the difference a query optimization have, let’s see an alternative valid plan that would generate the same result.</p>
+</code></pre><p>If we carefully track data passed between operators we can see that only absolutely necessary data is passed between operators which is good. To see the difference a query optimization has, let’s see an alternative valid plan that would generate the same result.</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token operator">+</span><span class="token comment">--------------+------------------------------------------------------------------------------------+</span>
 <span class="token operator">|</span> plan_type    <span class="token operator">|</span> <span class="token keyword keyword-plan">plan</span>                                                                               <span class="token operator">|</span>
 <span class="token operator">+</span><span class="token comment">--------------+------------------------------------------------------------------------------------+</span>
@@ -319,7 +319,7 @@
 <span class="token operator">|</span>              <span class="token operator">|</span>     Sort: student_table<span class="token punctuation">.</span>id <span class="token keyword keyword-ASC">ASC</span> NULLS <span class="token keyword keyword-LAST">LAST</span>                                          <span class="token operator">|</span>
 <span class="token operator">|</span>              <span class="token operator">|</span>       TableScan: student_table projection<span class="token operator">=</span><span class="token punctuation">[</span>id<span class="token punctuation">,</span> name<span class="token punctuation">,</span> surname<span class="token punctuation">,</span> major<span class="token punctuation">,</span> country<span class="token punctuation">]</span>      <span class="token operator">|</span>
 <span class="token operator">+</span><span class="token comment">--------------+------------------------------------------------------------------------------------+</span>
-</code></pre><p>Let’s examine data passed between operators for this hypothetical plan. As before source is following table:</p>
+</code></pre><p>Let’s examine data passed between operators for this hypothetical plan. As before, the source is the following table:</p>
 <table>
 <thead>
 <tr>
@@ -368,7 +368,7 @@
 </tr>
 </tbody>
 </table>
-<p>and <code>TableScan</code> emits exact same table, which is:</p>
+<p>and <code>TableScan</code> emits the exact same table, which is:</p>
 <table>
 <thead>
 <tr>
@@ -417,7 +417,7 @@
 </tr>
 </tbody>
 </table>
-<p><code>Sort</code> operator emits following table (where rows are ordered such that <code>Column=id</code> is ascending):</p>
+<p><code>Sort</code> operator emits the following table (where rows are ordered such that <code>Column=id</code> is ascending):</p>
 <table>
 <thead>
 <tr>
@@ -502,7 +502,7 @@
 </tbody>
 </table>
 <p>where rows that do not have <code>major=Mathematics</code> (<code>rows:{1,4}</code>) are removed as before.</p>
-<p>Then <code>Projection</code> at the end emits following data</p>
+<p>Then <code>Projection</code> at the end emits the following data</p>
 <table>
 <thead>
 <tr>
@@ -525,18 +525,18 @@
 </tr>
 </tbody>
 </table>
-<p>which is the same result as before. Unlike previous case, this plan carries lots of unnecessary data between operators.</p>
+<p>which is the same result as before. Unlike the previous case, this plan carries lots of unnecessary data between operators.</p>
 <p>Let’s examine the problems in the second plan</p>
 <ul>
-<li><code>Sort</code> operator receives whole table, then reorders its rows. Since sorting is relatively costly, we want to minimize data entering sort as much as possible. After sorting, <code>Filter</code> operator filters out some of the rows that is sorted. In this case there was no point in sorting those rows in the first place. As comparison <code>Sort</code> in the first plan receives 3 rows, however in the second plan it receives 5 rows. If the <code>Filter</code> were to prune 90% of the rows, the difference would be more dramatic. With this observation, we want <code>Filter</code> operation to be as below as possible during the execution to not carry around some rows unnecessarily.</li>
+<li><code>Sort</code> operator receives the whole table, then reorders its rows. Since sorting is relatively costly, we want to minimize data entering sort as much as possible. After sorting, <code>Filter</code> operator filters out some of the rows that are sorted. In this case there was no point in sorting those rows in the first place. As a comparison <code>Sort</code> in the first plan receives 3 rows, however in the second plan it receives 5 rows. If the <code>Filter</code> were to prune 90% of the rows, the difference would be more dramatic. With this observation, we want <code>Filter</code> operation to be as below as possible during the execution to not carry around some rows unnecessarily.</li>
 <li><code>Filter</code> operator receives <code>Column=id, Column=country</code> However, <code>Filter</code> itself doesn’t use these columns (it requires <code>Column=major</code> for its calculation). Also this column is not asked by the end user in the query (where user wants to see only <code>name</code>, <code>surname</code>). This column is passed to subsequent operator only to be pruned by projection there (This might not be important in terms of computation. However, it is important in terms of memory usage, and data traffic. Table at the source could have <code>100</code>s of columns).</li>
 </ul>
-<p>In this blog post, we have analyzed two <code>Logical Plan</code>s to see the difference query optimization can make (In more complex queries difference can be much more dramatic). In subsequent posts we will analyze</p>
+<p>In this blog post, we have analyzed two <code>Logical Plan</code>s to see the difference query optimization can make (In more complex queries the difference can be much more dramatic). In subsequent posts we will analyze</p>
 <ul>
 <li>Filter Push-down</li>
 <li>Projection Optimization</li>
 </ul>
-<p>with these optimization steps, we can convert following naive plan</p>
+<p>with these optimization steps, we can convert the following naive plan</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token operator">+</span><span class="token comment">--------------+------------------------------------------------------------------------------------+</span>
 <span class="token operator">|</span> plan_type    <span class="token operator">|</span> <span class="token keyword keyword-plan">plan</span>                                                                               <span class="token operator">|</span>
 <span class="token operator">+</span><span class="token comment">--------------+------------------------------------------------------------------------------------+</span>
@@ -557,8 +557,8 @@
 <span class="token operator">+</span><span class="token comment">--------------+-----------------------------------------------------------------------------+</span>
 </code></pre><p>where unnecessary data is not carried between operators.</p>
 <h2 id="references">References </h2>
-<p>1 - <a href="https://arrow.apache.org/datafusion/">Apache Datafusion Documentation</a><br>
-2 - <a href="https://github.com/apache/arrow-datafusion">Apache Datafusion Project Github Page</a></p>
+<p>1 - <a href="https://arrow.apache.org/datafusion/">Apache DataFusion Documentation</a><br>
+2 - <a href="https://github.com/apache/arrow-datafusion">Apache DataFusion Project GitHub Page</a></p>
 
       </div>
       

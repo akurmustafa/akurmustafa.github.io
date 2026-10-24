@@ -30,18 +30,18 @@
 <p>In this blog post, we will talk about Filter Pushdown optimization to generate better plans. However, before reading this blog post I recommend reading <a href="https://akurmustafa.github.io/blogs/query_optimization_introduction/query_optimization_introduction.html">part 1</a> where</p>
 <ul>
 <li>we discussed the query optimization in general.</li>
-<li>we established pre-requiste concepts for subsequent stages.</li>
+<li>we established pre-requisite concepts for subsequent stages.</li>
 </ul>
-<p>In this blog post, I assume reader is familiar with <code>SQL</code> queries, <code>LogicalPlan</code>, <code>PhysicalPlan</code>. Also, I use <a href="https://datafusion.apache.org/">Apache Datafusion</a> to execute queries and to generate plans. However, similar concepts apply to other sytems.</p>
+<p>In this blog post, I assume the reader is familiar with <code>SQL</code> queries, <code>LogicalPlan</code>, <code>PhysicalPlan</code>. Also, I use <a href="https://datafusion.apache.org/">Apache DataFusion</a> to execute queries and to generate plans. However, similar concepts apply to other systems.</p>
 <p>In query optimization, our aim is to generate the plan</p>
 <ul>
-<li>which execute fastest</li>
+<li>which executes fastest</li>
 <li>which minimizes the data transfer between operators</li>
 </ul>
-<p>Please note that, these properties are mostly correlated but doesn't imply the other. Hence, the best plan in one sense might be different from the best plan in another sense. Hence, there is no globally "the most optimum" plan for most of the cases.</p>
+<p>Please note that, these properties are mostly correlated but one doesn't imply the other. Hence, the best plan in one sense might be different from the best plan in another sense. Hence, there is no globally "the most optimum" plan for most of the cases.</p>
 <h2 id="motivating-example">Motivating Example </h2>
 <p>Filter Pushdown is helpful in minimizing the data transfer between operators. Let's see the difference Filter Pushdown can make with an example.</p>
-<p>Assume we have following table</p>
+<p>Assume we have the following table</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token keyword keyword-CREATE">CREATE</span> <span class="token keyword keyword-TABLE">TABLE</span> <span class="token keyword keyword-IF">IF</span> <span class="token operator">NOT</span> <span class="token keyword keyword-EXISTS">EXISTS</span> student_table<span class="token punctuation">(</span>
     id <span class="token keyword keyword-INT">INT</span><span class="token punctuation">,</span> 
     name <span class="token keyword keyword-VARCHAR">VARCHAR</span><span class="token punctuation">,</span> 
@@ -56,12 +56,12 @@
     <span class="token punctuation">(</span><span class="token number">104</span><span class="token punctuation">,</span> <span class="token string">'Ekaterina'</span><span class="token punctuation">,</span> <span class="token string">'Mihailov'</span><span class="token punctuation">,</span> <span class="token string">'Physics'</span><span class="token punctuation">,</span> <span class="token string">'RUS'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
     <span class="token punctuation">(</span><span class="token number">105</span><span class="token punctuation">,</span> <span class="token string">'Enrico'</span><span class="token punctuation">,</span> <span class="token string">'Bellucci'</span><span class="token punctuation">,</span> <span class="token string">'CS'</span><span class="token punctuation">,</span> <span class="token string">'ITA'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> 
     <span class="token punctuation">(</span><span class="token number">106</span><span class="token punctuation">,</span> <span class="token string">'Gerard'</span><span class="token punctuation">,</span> <span class="token string">'Depardieu'</span><span class="token punctuation">,</span> <span class="token string">'Mathematics'</span><span class="token punctuation">,</span> <span class="token string">'FR'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
-</code></pre><p>Consider following query which executes on this table:</p>
+</code></pre><p>Consider the following query which executes on this table:</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token keyword keyword-SELECT">SELECT</span> major<span class="token punctuation">,</span> ARRAY_AGG<span class="token punctuation">(</span><span class="token keyword keyword-DISTINCT">DISTINCT</span> country<span class="token punctuation">)</span>
 <span class="token keyword keyword-FROM">FROM</span> student_table
 <span class="token keyword keyword-GROUP">GROUP</span> <span class="token keyword keyword-BY">BY</span> major
 <span class="token keyword keyword-HAVING">HAVING</span>  major <span class="token operator">=</span> <span class="token string">'CS'</span><span class="token punctuation">;</span>
-</code></pre><p>The above query collects the different countries that students in the CS department are from. A naive planner would produce following plan for the query above</p>
+</code></pre><p>The above query collects the different countries that students in the CS department are from. A naive planner would produce the following plan for the query above</p>
 <h3 id="naive-plan">Naive Plan </h3>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token operator">+</span><span class="token comment">--------------+----------------------------------------------------------------------------------------------------+</span>
 <span class="token operator">|</span> plan_type    <span class="token operator">|</span> <span class="token keyword keyword-plan">plan</span>                                                                                               <span class="token operator">|</span>
@@ -71,7 +71,7 @@
 <span class="token operator">|</span>              <span class="token operator">|</span>     Aggregate: groupBy<span class="token operator">=</span><span class="token punctuation">[</span><span class="token punctuation">[</span>student_table<span class="token punctuation">.</span>major<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span> aggr<span class="token operator">=</span><span class="token punctuation">[</span><span class="token punctuation">[</span>ARRAY_AGG<span class="token punctuation">(</span><span class="token keyword keyword-DISTINCT">DISTINCT</span> student_table<span class="token punctuation">.</span>country<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">|</span>
 <span class="token operator">|</span>              <span class="token operator">|</span>       TableScan: student_table projection<span class="token operator">=</span><span class="token punctuation">[</span>major<span class="token punctuation">,</span> country<span class="token punctuation">]</span>                                         <span class="token operator">|</span>
 <span class="token operator">+</span><span class="token comment">--------------+----------------------------------------------------------------------------------------------------+</span>
-</code></pre><p>However, we do not need to do complex aggregation (<code>ARRAY_AGG(DISTINCT)</code>) for each department. The user is only interested in to the <code>CS</code> department. Hence, It is enough to do the aggregation for just <code>CS</code> department. Hence, we could have used the following plan also for the same task.</p>
+</code></pre><p>However, we do not need to do complex aggregation (<code>ARRAY_AGG(DISTINCT)</code>) for each department. The user is only interested in the <code>CS</code> department. Hence, it is enough to do the aggregation for just the <code>CS</code> department. Hence, we could have used the following plan also for the same task.</p>
 <h3 id="optimized-plan">Optimized Plan </h3>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token operator">+</span><span class="token comment">--------------+--------------------------------------------------------------------------------------------------+</span>
 <span class="token operator">|</span> plan_type    <span class="token operator">|</span> <span class="token keyword keyword-plan">plan</span>                                                                                             <span class="token operator">|</span>
@@ -81,18 +81,18 @@
 <span class="token operator">|</span>              <span class="token operator">|</span>     Filter: student_table<span class="token punctuation">.</span>major <span class="token operator">=</span> Utf8<span class="token punctuation">(</span><span class="token string">"CS"</span><span class="token punctuation">)</span>                                                     <span class="token operator">|</span>
 <span class="token operator">|</span>              <span class="token operator">|</span>       TableScan: student_table projection<span class="token operator">=</span><span class="token punctuation">[</span>major<span class="token punctuation">,</span> country<span class="token punctuation">]</span>                                       <span class="token operator">|</span>
 <span class="token operator">+</span><span class="token comment">--------------+--------------------------------------------------------------------------------------------------+</span>
-</code></pre><p>where filtering is done immediately after source. Please note that, both plans are same in terms of end result. They both produce following correct result</p>
+</code></pre><p>where filtering is done immediately after the source. Please note that, both plans are the same in terms of end result. They both produce the following correct result</p>
 <pre data-role="codeBlock" data-info="" class="language-text"><code>+-------+-------------------------------------------+
 | major | ARRAY_AGG(DISTINCT student_table.country) |
 +-------+-------------------------------------------+
 | CS    | [ITA, US]                                 |
 +-------+-------------------------------------------+
 
-</code></pre><p>Let's quantify the complexity of each plan above to compare their efficieny. For doing so, we assume following properties hold:</p>
+</code></pre><p>Let's quantify the complexity of each plan above to compare their efficiency. For doing so, we assume the following properties hold:</p>
 <ul>
-<li>Each operator has a linear complexity <code>k*n_input_rows</code>, where <code>k</code> is operator specific constant.</li>
+<li>Each operator has a linear complexity <code>k*n_input_rows</code>, where <code>k</code> is an operator specific constant.</li>
 </ul>
-<p>To quantify complexity assume following statistics are true for the source (Please note that these assumptions doesn't hold for the example source table given):</p>
+<p>To quantify complexity assume the following statistics are true for the source (Please note that these assumptions don't hold for the example source table given):</p>
 <ul>
 <li>Source table has <code>N</code> rows.</li>
 <li>There are <code>M</code> distinct <code>major</code> columns, with equal group sizes (e.g. each distinct <code>major</code> group consists of <code>N/M</code> rows).</li>
@@ -134,7 +134,7 @@
 </tr>
 </tbody>
 </table>
-<p>which has the total complexity of <code>5 * N + N/M + 1</code>. Corresponding complexity table for <a href="#optimized-plan">optimized plan</a> is</p>
+<p>which has the total complexity of <code>5 * N + N/M + 1</code>. Corresponding complexity table for the <a href="#optimized-plan">optimized plan</a> is</p>
 <table>
 <thead>
 <tr>
@@ -172,19 +172,19 @@
 </tbody>
 </table>
 <p>which has the total complexity of <code>2 * N + 4 * N/M + 1</code>.<br>
-As can be seen, for this example. Pushing the filter down is helpful, with given assumptions.</p>
+As can be seen, for this example, pushing the filter down is helpful, with given assumptions.</p>
 <h2 id="formal-analysis">Formal Analysis </h2>
-<p>Let's examine more formally the conditions for when pushing down the filter makes sense. Pushing down the filter can be thought as: Converting following stage</p>
+<p>Let's examine more formally the conditions for when pushing down the filter makes sense. Pushing down the filter can be thought of as: Converting the following stage</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code>Filter: <span class="token operator">&lt;</span>filter conditions<span class="token operator">&gt;</span>
   Operator
 </code></pre><p>in a plan, into stage below</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code>Operator
   Filter: <span class="token operator">&lt;</span>filter conditions<span class="token operator">&gt;</span>
-</code></pre><p>To be able to do this conversion, following conditions should hold.<br>
+</code></pre><p>To be able to do this conversion, the following conditions should hold.<br>
 <strong>1.</strong> All of the columns filter expression refers, should be present at the input of the filter.<br>
-<strong>2.</strong> Both of these stages should be guaranteed to generate same result.</p>
+<strong>2.</strong> Both of these stages should be guaranteed to generate the same result.</p>
 <p>Otherwise, conversion will produce an invalid plan.</p>
-<p><strong>Condition 1</strong> holds as long as filter doesn't refer any expression <code>Operator</code> generates. As an example</p>
+<p><strong>Condition 1</strong> holds as long as filter doesn't refer to any expression <code>Operator</code> generates. As an example</p>
 <pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code>Filter: a <span class="token operator">=</span> <span class="token number">2</span>
   Projection <span class="token punctuation">(</span>a<span class="token punctuation">,</span> b<span class="token punctuation">)</span>
 </code></pre><p>can be converted to</p>
@@ -204,7 +204,7 @@ As can be seen, for this example. Pushing the filter down is helpful, with given
 <li><code>Operator</code> generates <code>r * N</code> rows at its output, given it receives <code>N</code> rows.</li>
 <li>Per row complexity constant for the <code>Operator</code> is <code>r1 * k</code> where <code>k</code> is the per row complexity constant for <code>Filter</code>.</li>
 </ul>
-<p>Complexity table for the <code>Stage 1</code> (the version where <code>Filter</code> is above of the <code>Operator</code>) is:</p>
+<p>Complexity table for the <code>Stage 1</code> (the version where <code>Filter</code> is above the <code>Operator</code>) is:</p>
 <table>
 <thead>
 <tr>
@@ -230,7 +230,7 @@ As can be seen, for this example. Pushing the filter down is helpful, with given
 </tbody>
 </table>
 <p>This table has the complexity <code>N * r1 * k + r * N * k</code> which can be written as <code>N * k * (r1 + r)</code>.</p>
-<p><code>Stage 2</code>, where filter pushed down below <code>Operator</code> has following complexity table</p>
+<p><code>Stage 2</code>, where filter is pushed down below <code>Operator</code> has the following complexity table</p>
 <table>
 <thead>
 <tr>
@@ -261,7 +261,7 @@ As can be seen, for this example. Pushing the filter down is helpful, with given
 <code>1 - r &lt;= p * r1</code> holds, pushing down the filter makes sense.<br>
 With this condition in hand, let's consider some common cases</p>
 <h2 id="case-1-r--1">Case 1 <code>r = 1</code>. </h2>
-<p><code>r = 1</code> means that number of rows received and enitted by the operator is same. For these operators, condition for filter pushdown turns into <code>0 &lt;= p * r1</code>. This condition says that as long as <code>Filter</code> condition removes out something (If we are sure that filter doesn't prune anything. We should remove filter from the plan. This is another optimization). We should pushdown filter through this operator. Hence, pushing down the <code>Filter</code> through operators where <code>r = 1</code> such as</p>
+<p><code>r = 1</code> means that number of rows received and emitted by the operator is the same. For these operators, condition for filter pushdown turns into <code>0 &lt;= p * r1</code>. This condition says that as long as <code>Filter</code> condition removes out something (If we are sure that filter doesn't prune anything. We should remove filter from the plan. This is another optimization). We should pushdown filter through this operator. Hence, pushing down the <code>Filter</code> through operators where <code>r = 1</code> such as</p>
 <ul>
 <li><code>Projection</code></li>
 <li><code>Sort</code></li>
@@ -283,15 +283,15 @@ With this condition in hand, let's consider some common cases</p>
 </ul>
 <p>is beneficial.</p>
 <h3 id="conclusion">Conclusion </h3>
-<p>In this blog post, we have analyzed the conditions when pushing down the filter during planning is beneficial. Filter should be pushed down through an operator, when following conditions hold</p>
+<p>In this blog post, we have analyzed the conditions when pushing down the filter during planning is beneficial. Filter should be pushed down through an operator, when the following conditions hold</p>
 <ul>
 <li>All of the columns filter expression refers, should be present at the input of the filter.</li>
-<li><code>Filter</code> + <code>Operator</code> stage and <code>Operator</code> + <code>Filter</code> stage should generate same results (They should be commutative).</li>
+<li><code>Filter</code> + <code>Operator</code> stage and <code>Operator</code> + <code>Filter</code> stage should generate the same results (They should be commutative).</li>
 <li>Pushing down the filter would indeed be more efficient in terms of execution.</li>
 </ul>
 <p>We have seen that, last condition is <code>true</code> for most of the cases. Hence, as a good rule of thumb <code>Filter</code> operation should be close to the source as much as possible.</p>
 <h3 id="references">References </h3>
-<p>1 - <a href="https://arrow.apache.org/datafusion/">Apache Datafusion Documentation</a></p>
+<p>1 - <a href="https://arrow.apache.org/datafusion/">Apache DataFusion Documentation</a></p>
 
       </div>
       

@@ -1,16 +1,16 @@
 ![clock_header.jpg](images/clock_header.jpg)
 # Query Optimization - Introduction
 
-In this series of blog posts. I will talk about query optimization in general. However, before doing so; In this blog post we will cover
+In this series of blog posts, I will talk about query optimization in general. However, before doing so, in this blog post we will cover
 
 - SQL
 - Logical Plan, Physical Plan
 - How to read a Plan
 - Motivating Example for query optimization
 
-These topics will lay the foundation for query optimization, will establish a common vocabulary and hopefully make reader motivate for subsequent parts.
+These topics will lay the foundation for query optimization, will establish a common vocabulary and hopefully make the reader motivated for subsequent parts.
 
-In subsequent parts: I plan to cover following optimizations:
+In subsequent parts, I plan to cover the following optimizations:
 
 - [Filter Pushdown](https://akurmustafa.github.io/blogs/query_optimization_filter_pushdown/query_optimization_filter_pushdown.html)
 - Projection Optimization
@@ -22,7 +22,7 @@ In subsequent parts: I plan to cover following optimizations:
 
 ## What is SQL:
 
-SQL (Structured Query Language) is a descriptive language that is used to interact with databases. An SQL query specifies the desired output by the user. However, it doesn’t specify how to calculate desired output during execution. As an example, following SQL query:
+SQL (Structured Query Language) is a descriptive language that is used to interact with databases. An SQL query specifies the desired output by the user. However, it doesn’t specify how to calculate the desired output during execution. As an example, the following SQL query:
 
   
 
@@ -33,14 +33,14 @@ WHERE major='Mathematics'
 ORDER BY id;
 ```
 
-can be translated to english as 
->Bring me the name, and surnames of the each student who majors in Mathematics where result is ordered by student id.
+can be translated to English as 
+>Bring me the name, and surnames of each student who majors in Mathematics where the result is ordered by student id.
  
-However, it says nothing about how to accomplish this. For most of the queries, especially for complex queries there are many possible ways to calculate desired result with various tradeoffs. 
+However, it says nothing about how to accomplish this. For most of the queries, especially for complex queries there are many possible ways to calculate the desired result with various tradeoffs. 
 
-From this specification, a query is pretty opaque to end user which is fine for most of the users who don’t and shouldn’t care. However, if we work on performance and optimization. We need to inspect internals of the query execution better. `LogicalPlan` and `PhysicalPlan` enables us to see what a query does, how it executes in a friendly format. 
+From this specification, a query is pretty opaque to the end user which is fine for most of the users who don’t and shouldn’t care. However, if we work on performance and optimization, we need to inspect the internals of the query execution better. `LogicalPlan` and `PhysicalPlan` enable us to see what a query does, how it executes in a friendly format. 
 
-Before continuing, in case anyone wants to try out the same queries locally. Here is the query to generate necessary table locally.
+Before continuing, in case anyone wants to try out the same queries locally, here is the query to generate the necessary table locally.
 
  
 
@@ -54,11 +54,11 @@ CREATE TABLE IF NOT EXISTS student_table(id INT, name VARCHAR, surname VARCHAR, 
 
 ```
 
-Also please note that I execute these queries using [cli](https://arrow.apache.org/datafusion/user-guide/cli.html) tool of [Apache Datafusion](https://arrow.apache.org/datafusion/). This is the system I am most familiar with, However results and corresponding queries should be (almost) same in other query engines (configuration options might be pretty different though).
+Also please note that I execute these queries using [cli](https://arrow.apache.org/datafusion/user-guide/cli.html) tool of [Apache DataFusion](https://arrow.apache.org/datafusion/). This is the system I am most familiar with. However, results and corresponding queries should be (almost) the same in other query engines (configuration options might be pretty different though).
 
 ## Logical Plan - Physical Plan
 
-A `LogicalPlan` contains the necessary logical steps to compute query result. However, this representation is in high level, and omits lots of details related to the actual execution. I like to think `LogicalPlan` more like pseudo code, where you can see the general picture without bogging down in detail or specificities. In contrast `PhysicalPlan` is more like implementation of a pseudocode in a specific language. Anyone knowing the internals of the query engine can understand what is going on (like reading a code) by reading the `PhysicalPlan`. However, for this blog post `Logical Plan` representation will be enough for our use cases. Let’s see the`Logical Plan`  Datafusion generates for the query above by executing following command:
+A `LogicalPlan` contains the necessary logical steps to compute the query result. However, this representation is in high level, and omits lots of details related to the actual execution. I like to think of `LogicalPlan` more like pseudo code, where you can see the general picture without bogging down in detail or specificities. In contrast `PhysicalPlan` is more like an implementation of a pseudocode in a specific language. Anyone knowing the internals of the query engine can understand what is going on (like reading a code) by reading the `PhysicalPlan`. However, for this blog post `Logical Plan` representation will be enough for our use cases. Let’s see the `Logical Plan`  DataFusion generates for the query above by executing the following command:
 
 ```sql
 -- Generate only logical plan
@@ -71,7 +71,7 @@ WHERE major='Mathematics'
 ORDER BY id;
 ```
 
-where original query is prepended with `EXPLAIN` keyword and configuration is set logical plan only mode to not clutter result with physical plan for now. Command above produces following `Logical Plan`:
+where the original query is prepended with `EXPLAIN` keyword and configuration is set to logical plan only mode to not clutter the result with physical plan for now. Command above produces the following `Logical Plan`:
 
 ```sql
 +--------------+-----------------------------------------------------------------------------+
@@ -85,23 +85,23 @@ where original query is prepended with `EXPLAIN` keyword and configuration is se
 +--------------+-----------------------------------------------------------------------------+
 ```
 
-A `Logical Plan` contains the necessary steps to produce the desired result according to specifications of the SQL query, where each step is represented as single line and executes from bottom to top. To better understand this representation, let’s look the equivalent `Logical Plan` as tree.
+A `Logical Plan` contains the necessary steps to produce the desired result according to specifications of the SQL query, where each step is represented as a single line and executes from bottom to top. To better understand this representation, let’s look at the equivalent `Logical Plan` as a tree.
 
 
 
 ![logical_plan_tree.png](images/logical_plan_tree.png)
 
-where each arrow show the data flow during execution. These two representations are completely same. In the first representation dependency between operators are specified by the indentation level (e.g The operator(s) with 2 indentation level ahead of an operator is the child(ren) of the operator). First representation is more concise, more text friendly. However, it maybe intimidating at the start. Second representation is more friendly, however fills up lots of space. 
+where each arrow shows the data flow during execution. These two representations are completely the same. In the first representation dependency between operators is specified by the indentation level (e.g The operator(s) with 2 indentation level ahead of an operator is the child(ren) of the operator). First representation is more concise, more text friendly. However, it may be intimidating at the start. Second representation is more friendly, however fills up lots of space. 
 
- Logical Plan above describes following steps in order
+ Logical Plan above describes the following steps in order
 
-- Scan the each row of the original table, where only columns: `id, name, surname, major` are used.
+- Scan each row of the original table, where only columns: `id, name, surname, major` are used.
 - Among scanned rows, just keep the rows where `major` is ‘Mathematics’.
 - Shuffle columns such that new column order is `name`, `surname`, `id` respectively, where column `major` is pruned also.
-- Sort constructed rows according to id columns
+- Sort constructed rows according to the id column
 - Shuffle columns such that new column order is `name`, `surname` respectively, where column `id` is pruned.
 
-To see what is going on better, let’s see the data that is passed between operators. At the source(this can be a file, a kafka topic, etc.) following table resides
+To see what is going on better, let’s see the data that is passed between operators. At the source(this can be a file, a Kafka topic, etc.) the following table resides
 
 | id | name  | surname | major | country |
 | --- | --- | --- | --- | --- |
@@ -111,7 +111,7 @@ To see what is going on better, let’s see the data that is passed between oper
 | 102 | Steven  | Smith | Mathematics | UK |
 | 104 | Ekaterina | Mihailov | Physics | RUS |
 
-`TableScan` operator emits following table to its output (where `Column=country` is pruned.)
+`TableScan` operator emits the following table to its output (where `Column=country` is pruned.)
 
 | id | name  | surname | major |
 | --- | --- | --- | --- |
@@ -121,7 +121,7 @@ To see what is going on better, let’s see the data that is passed between oper
 | 102 | Steven  | Smith | Mathematics |
 | 104 | Ekaterina | Mihailov | Physics |
 
-`Filter` operator emits following table
+`Filter` operator emits the following table
 
 | id | name  | surname | major |
 | --- | --- | --- | --- |
@@ -129,9 +129,9 @@ To see what is going on better, let’s see the data that is passed between oper
 | 105 | Gerard | Depardieu | Mathematics |
 | 102 | Steven  | Smith | Mathematics |
 
-where 2^nd^, 5^th^ row in the input table is removed, since their `major` value is not `Mathematics`*.*
+where 2^nd^, 5^th^ rows in the input table are removed, since their `major` value is not `Mathematics`*.*
 
-First `Projection` emits following table
+First `Projection` emits the following table
 
 | name  | surname | id |
 | --- | --- | --- |
@@ -141,7 +141,7 @@ First `Projection` emits following table
 
 where `Column`: `major` is removed, then  columns are re-ordered.
 
-`Sort` operator emit following table, where rows are re-ordered such that id column is Ascending.
+`Sort` operator emits the following table, where rows are re-ordered such that id column is Ascending.
 
 | name  | surname | id |
 | --- | --- | --- |
@@ -149,7 +149,7 @@ where `Column`: `major` is removed, then  columns are re-ordered.
 | Mustafa | Demir | 103 |
 | Gerard | Depardieu | 105 |
 
-Then, final `Projection` emits following table:
+Then, final `Projection` emits the following table:
 
 | name  | surname |
 | --- | --- |
@@ -157,7 +157,7 @@ Then, final `Projection` emits following table:
 | Mustafa | Demir |
 | Gerard | Depardieu |
 
-where id column `id` removed. This is the result seen at the output by the user. For the query
+where id column `id` is removed. This is the result seen at the output by the user. For the query
 
 ```sql
 SELECT name, surname
@@ -166,7 +166,7 @@ WHERE major='Mathematics'
 ORDER BY id;
 ```
 
-Datafusion emits following result:
+DataFusion emits the following result:
 
 ```sql
 +---------+-----------+
@@ -178,7 +178,7 @@ Datafusion emits following result:
 +---------+-----------+
 ```
 
-If we carefully track data passed between operators we can see that only absolutely necessary data is passed between operators which is good. To see the difference a query optimization have, let’s see an alternative valid plan that would generate the same result.
+If we carefully track data passed between operators we can see that only absolutely necessary data is passed between operators which is good. To see the difference a query optimization has, let’s see an alternative valid plan that would generate the same result.
 
 ```sql
 +--------------+------------------------------------------------------------------------------------+
@@ -191,7 +191,7 @@ If we carefully track data passed between operators we can see that only absolut
 +--------------+------------------------------------------------------------------------------------+
 ```
 
-Let’s examine data passed between operators for this hypothetical plan. As before source is following table:
+Let’s examine data passed between operators for this hypothetical plan. As before, the source is the following table:
 
 | id | name  | surname | major | country |
 | --- | --- | --- | --- | --- |
@@ -201,7 +201,7 @@ Let’s examine data passed between operators for this hypothetical plan. As bef
 | 102 | Steven  | Smith | Mathematics | UK |
 | 104 | Ekaterina | Mihailov | Physics | RUS |
 
-and `TableScan` emits exact same table, which is:
+and `TableScan` emits the exact same table, which is:
 
 | id | name  | surname | major | country |
 | --- | --- | --- | --- | --- |
@@ -211,7 +211,7 @@ and `TableScan` emits exact same table, which is:
 | 102 | Steven  | Smith | Mathematics | UK |
 | 104 | Ekaterina | Mihailov | Physics | RUS |
 
-`Sort` operator emits following table (where rows are ordered such that `Column=id` is ascending):
+`Sort` operator emits the following table (where rows are ordered such that `Column=id` is ascending):
 
 | id | name  | surname | major | country |
 | --- | --- | --- | --- | --- |
@@ -231,7 +231,7 @@ and `TableScan` emits exact same table, which is:
 
 where rows that do not have `major=Mathematics` (`rows:{1,4}`) are removed as before.
 
-Then `Projection` at the end emits following data
+Then `Projection` at the end emits the following data
 
 | name  | surname |
 | --- | --- |
@@ -239,19 +239,19 @@ Then `Projection` at the end emits following data
 | Mustafa | Demir |
 | Gerard | Depardieu |
 
-which is the same result as before. Unlike previous case, this plan carries lots of unnecessary data between operators. 
+which is the same result as before. Unlike the previous case, this plan carries lots of unnecessary data between operators. 
 
 Let’s examine the problems in the second plan
 
-- `Sort` operator receives whole table, then reorders its rows. Since sorting is relatively costly, we want to minimize data entering sort as much as possible. After sorting, `Filter` operator filters out some of the rows that is sorted. In this case there was no point in sorting those rows in the first place. As comparison `Sort` in the first plan receives 3 rows, however in the second plan it receives 5 rows. If the `Filter` were to prune 90% of the rows, the difference would be more dramatic. With this observation, we want `Filter` operation to be as below as possible during the execution to not carry around some rows unnecessarily.
+- `Sort` operator receives the whole table, then reorders its rows. Since sorting is relatively costly, we want to minimize data entering sort as much as possible. After sorting, `Filter` operator filters out some of the rows that are sorted. In this case there was no point in sorting those rows in the first place. As a comparison `Sort` in the first plan receives 3 rows, however in the second plan it receives 5 rows. If the `Filter` were to prune 90% of the rows, the difference would be more dramatic. With this observation, we want `Filter` operation to be as below as possible during the execution to not carry around some rows unnecessarily.
 - `Filter` operator receives `Column=id, Column=country` However, `Filter` itself doesn’t use these columns (it requires `Column=major` for its calculation). Also this column is not asked by the end user in the query (where user wants to see only `name`, `surname`). This column is passed to subsequent operator only to be pruned by projection there (This might not be important in terms of computation. However, it is important in terms of memory usage, and data traffic. Table at the source could have `100`s of columns).
 
-In this blog post, we have analyzed two `Logical Plan`s to see the difference query optimization can make (In more complex queries difference can be much more dramatic). In subsequent posts we will analyze 
+In this blog post, we have analyzed two `Logical Plan`s to see the difference query optimization can make (In more complex queries the difference can be much more dramatic). In subsequent posts we will analyze 
 
 - Filter Push-down
 - Projection Optimization
 
-with these optimization steps, we can convert following naive plan
+with these optimization steps, we can convert the following naive plan
 
 ```sql
 +--------------+------------------------------------------------------------------------------------+
@@ -281,8 +281,8 @@ to its optimized version
 where unnecessary data is not carried between operators.
 
 ## References
-1 - [Apache Datafusion Documentation](https://arrow.apache.org/datafusion/)
-2 - [Apache Datafusion Project Github Page](https://github.com/apache/arrow-datafusion)
+1 - [Apache DataFusion Documentation](https://arrow.apache.org/datafusion/)
+2 - [Apache DataFusion Project GitHub Page](https://github.com/apache/arrow-datafusion)
 
 
 
