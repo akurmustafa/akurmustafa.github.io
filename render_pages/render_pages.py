@@ -56,6 +56,7 @@ PAGES = [
     blog_post("kral_ciplak"),
     blog_post("maniler"),
     blog_post("iran_izlenimleri"),
+    blog_post("kucuk_adam"),
 ]
 
 
